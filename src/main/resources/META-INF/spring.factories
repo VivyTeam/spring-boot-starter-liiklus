@@ -1,0 +1,3 @@
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+services.vivy.liiklus.LiiklusAutoConfiguration,\
+services.vivy.liiklus.LiiklusReactiveHealthIndicatorAutoConfiguration
