@@ -1,4 +1,4 @@
-package services.vivy.liiklus;
+package io.vivy.liiklus;
 
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;

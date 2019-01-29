@@ -1,4 +1,4 @@
-package services.vivy.liiklus;
+package io.vivy.liiklus;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

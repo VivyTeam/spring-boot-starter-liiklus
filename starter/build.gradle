@@ -1,0 +1,29 @@
+test.testLogging {
+    displayGranularity 1
+    showStackTraces = true
+    exceptionFormat = 'full'
+    events "STARTED", "PASSED", "FAILED", "SKIPPED"
+}
+
+
+dependencies {
+    annotationProcessor 'org.projectlombok:lombok'
+    testAnnotationProcessor  'org.projectlombok:lombok'
+    compileOnly 'org.projectlombok:lombok'
+    testCompileOnly 'org.projectlombok:lombok'
+
+    compile 'org.springframework.boot:spring-boot-autoconfigure'
+    compileOnly 'org.springframework.boot:spring-boot-starter-actuator'
+    compile 'javax.validation:validation-api'
+    compile 'com.github.bsideup.liiklus:client'
+    compile 'io.rsocket:rsocket-transport-netty'
+
+    testCompile 'com.github.bsideup.liiklus:testing'
+    testCompile 'org.springframework.boot:spring-boot-starter-test'
+    testCompile 'org.springframework.boot:spring-boot-starter-actuator'
+    testCompile 'org.springframework.boot:spring-boot-starter-webflux'
+    testCompile 'org.hibernate.validator:hibernate-validator'
+    testCompile 'org.assertj:assertj-core'
+    testCompile 'io.rest-assured:rest-assured'
+    testCompile 'org.awaitility:awaitility'
+}

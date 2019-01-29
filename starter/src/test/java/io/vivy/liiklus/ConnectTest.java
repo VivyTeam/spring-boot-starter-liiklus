@@ -1,4 +1,4 @@
-package services.vivy.liiklus;
+package io.vivy.liiklus;
 
 import com.github.bsideup.liiklus.protocol.PublishReply;
 import org.junit.jupiter.api.Test;

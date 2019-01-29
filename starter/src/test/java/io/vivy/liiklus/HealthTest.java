@@ -1,4 +1,4 @@
-package services.vivy.liiklus;
+package io.vivy.liiklus;
 
 import org.junit.jupiter.api.Test;
 
