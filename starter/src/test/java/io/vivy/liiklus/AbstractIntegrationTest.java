@@ -1,4 +1,4 @@
-package services.vivy.liiklus;
+package io.vivy.liiklus;
 
 import com.github.bsideup.liiklus.LiiklusClient;
 import com.github.bsideup.liiklus.container.LiiklusContainer;

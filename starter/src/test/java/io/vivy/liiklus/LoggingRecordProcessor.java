@@ -1,4 +1,4 @@
-package services.vivy.liiklus;
+package io.vivy.liiklus;
 
 import com.github.bsideup.liiklus.protocol.ReceiveReply;
 import lombok.extern.slf4j.Slf4j;

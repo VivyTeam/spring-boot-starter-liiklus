@@ -1,4 +1,4 @@
-package services.vivy.liiklus;
+package io.vivy.liiklus;
 
 import com.github.bsideup.liiklus.GRPCLiiklusClient;
 import com.github.bsideup.liiklus.LiiklusClient;
@@ -67,7 +67,7 @@ public class LiiklusAutoConfiguration {
     }
 
     @Bean
-    @ConditionalOnBean(type = "services.vivy.liiklus.RecordProcessor")
+    @ConditionalOnBean(type = "io.vivy.liiklus.RecordProcessor")
     ApplicationRunner mainLoop(LiiklusClient liiklusClient, RecordProcessor recordProcessor) {
         var ackScheduler = Schedulers.newSingle("ack");
         return new LiiklusConsumerLoop(
