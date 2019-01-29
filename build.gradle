@@ -7,8 +7,17 @@ allprojects {
     apply plugin: 'io.spring.dependency-management'
 
     repositories {
-        jcenter()
-        maven { url 'https://jitpack.io' }
+        maven {
+            url 'https://jitpack.io'
+            content {
+                includeGroupByRegex "com\\.github.*"
+            }
+        }
+        jcenter {
+            content {
+                excludeGroupByRegex "com\\.github.*"
+            }
+        }
     }
 
     dependencyManagement {
