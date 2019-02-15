@@ -29,7 +29,7 @@ allprojects {
 
         testCompile {
             imports {
-                mavenBom 'org.testcontainers:testcontainers-bom:1.10.5'
+                mavenBom 'org.testcontainers:testcontainers-bom:1.10.6'
             }
         }
 
