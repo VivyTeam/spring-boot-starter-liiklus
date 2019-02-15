@@ -15,7 +15,7 @@ allprojects {
         overriddenByDependencies = false
 
         imports {
-            mavenBom 'org.springframework.boot:spring-boot-dependencies:2.1.2.RELEASE'
+            mavenBom 'org.springframework.boot:spring-boot-dependencies:2.1.3.RELEASE'
         }
 
         testCompile {
