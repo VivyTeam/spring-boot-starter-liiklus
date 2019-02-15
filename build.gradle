@@ -27,7 +27,7 @@ allprojects {
         dependencies {
             dependency 'org.projectlombok:lombok:1.18.4'
 
-            dependencySet(group: 'com.github.bsideup.liiklus', version: '0.7.0') {
+            dependencySet(group: 'com.github.bsideup.liiklus', version: '0.8.1') {
                 entry 'client'
                 entry 'testing'
             }
