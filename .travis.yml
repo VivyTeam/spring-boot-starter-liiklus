@@ -1,0 +1,16 @@
+language: java
+jdk:
+  - openjdk11
+
+sudo: required
+services:
+  - docker
+
+install:
+  - ./gradlew build -x check
+
+jobs:
+  include:
+    - stage: test
+      env: [ NAME=starter ]
+      script: ./gradlew check
