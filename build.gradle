@@ -7,8 +7,17 @@ allprojects {
     apply plugin: 'io.spring.dependency-management'
 
     repositories {
-        jcenter()
-        maven { url 'https://jitpack.io' }
+        maven {
+            url 'https://jitpack.io'
+            content {
+                includeGroupByRegex "com\\.github.*"
+            }
+        }
+        jcenter {
+            content {
+                excludeGroupByRegex "com\\.github.*"
+            }
+        }
     }
 
     dependencyManagement {
@@ -25,16 +34,13 @@ allprojects {
         }
 
         dependencies {
-            dependency 'org.projectlombok:lombok:1.18.4'
-
-            dependencySet(group: 'com.github.bsideup.liiklus', version: '0.7.0') {
+            dependencySet(group: 'com.github.bsideup.liiklus', version: '0.8.1') {
                 entry 'client'
                 entry 'testing'
             }
 
-            dependency 'io.rsocket:rsocket-transport-netty:0.11.15'
-
             dependency 'com.github.UvitaTeam.mdc-logger:logger:0.0.3'
+            
             dependency 'com.github.UvitaTeam:json-schema-merger:0.1.3'
 
             dependency 'org.awaitility:awaitility:3.1.6'
