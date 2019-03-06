@@ -62,12 +62,12 @@ public class LiiklusAutoConfiguration {
     }
 
     @Bean
-    LiiklusPublisher userEventLogProducer(LiiklusClient liiklusClient) {
+    LiiklusPublisher liiklusPublisher(LiiklusClient liiklusClient) {
         return new LiiklusPublisher(liiklusClient, properties.getTopic());
     }
 
     @Bean
-    @ConditionalOnBean(type = "io.vivy.liiklus.RecordProcessor")
+    @ConditionalOnBean(RecordProcessor.class)
     ApplicationRunner mainLoop(LiiklusClient liiklusClient, RecordProcessor recordProcessor) {
         var ackScheduler = Schedulers.newSingle("ack");
         return new LiiklusConsumerLoop(

@@ -20,7 +20,7 @@ liiklus.groupName=group
 liiklus.groupVersion=2
 
 // optionally in boot 2 notation
-liiklus.ackInterval=10ms
+liiklus.ackInterval=10ms // default is 5s
 ```
 
 ### To consume the messages
