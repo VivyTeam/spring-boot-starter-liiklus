@@ -4,7 +4,7 @@
 
 Add to dependency management
 
-`dependency 'com.github.UvitaTeam.spring-boot-starter-liiklus:starter:0.0.1'`
+`dependency 'com.github.UvitaTeam.spring-boot-starter-liiklus:starter:$latest'`
 
 and to module 
 
