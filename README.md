@@ -4,12 +4,13 @@
 
 Add to dependency management
 
-`dependency 'com.github.UvitaTeam.spring-boot-starter-liiklus:starter:$latest'`
+`dependency 'com.github.VivyTeam.spring-boot-starter-liiklus:starter:$latest'`
 
 and to module 
 
-`compile 'com.github.UvitaTeam.spring-boot-starter-liiklus:starter'`
+`compile 'com.github.VivyTeam.spring-boot-starter-liiklus:starter'`
 
+(assuming you're using jitpack)
 
 define properties to connect to liiklus
 
