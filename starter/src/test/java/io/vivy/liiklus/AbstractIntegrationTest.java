@@ -34,7 +34,7 @@ import static org.awaitility.Awaitility.await;
 public class AbstractIntegrationTest {
 
     static {
-        LiiklusContainer liiklus = new LiiklusContainer("0.7.0")
+        LiiklusContainer liiklus = new LiiklusContainer("0.8.2")
                 .withExposedPorts(8081)
                 .withEnv("storage_records_type", "MEMORY");
 
