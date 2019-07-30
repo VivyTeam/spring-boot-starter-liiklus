@@ -9,6 +9,8 @@ public interface EventLogProcessor<T> extends Function<EventLogProcessor.Event<T
 
     interface Event<T> {
 
+        int getPartition();
+
         long getOffset();
 
         String getKey();

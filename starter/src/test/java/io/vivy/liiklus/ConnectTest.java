@@ -17,6 +17,6 @@ public class ConnectTest extends AbstractIntegrationTest {
         PublishReply offset = liiklusPublisher.publish(key, key.getBytes()).block(Duration.ofSeconds(5));
 
         waitForLiiklusOffset(offset);
-        verify(loggingRecordProcessor).apply(any());
+        verify(loggingRecordProcessor).apply(any(), any());
     }
 }

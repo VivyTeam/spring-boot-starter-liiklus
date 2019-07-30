@@ -15,7 +15,7 @@ import java.time.Instant;
 public class LoggingRecordProcessor implements RecordProcessor {
 
     @Override
-    public Mono<Void> apply(ReceiveReply.Record record) {
+    public Mono<Void> apply(Integer passedPartition, ReceiveReply.Record record) {
         return new EventLogProcessor<ReceiveReply.Record>() {
             @Override
             public Mono<Void> apply(Event<ReceiveReply.Record> recordEvent) {
@@ -23,6 +23,10 @@ public class LoggingRecordProcessor implements RecordProcessor {
                 return Mono.empty();
             }
         }.apply(new EventLogProcessor.Event<>() {
+
+            @Getter(lazy = true)
+            private final int partition = passedPartition;
+
             @Getter
             private final long offset = record.getOffset();
 
@@ -37,6 +41,8 @@ public class LoggingRecordProcessor implements RecordProcessor {
 
             @Getter
             public final boolean replay = record.getReplay();
+
         });
     }
+
 }

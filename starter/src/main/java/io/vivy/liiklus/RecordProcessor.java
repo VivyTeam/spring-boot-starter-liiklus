@@ -3,9 +3,9 @@ package io.vivy.liiklus;
 import com.github.bsideup.liiklus.protocol.ReceiveReply;
 import reactor.core.publisher.Mono;
 
-import java.util.function.Function;
+import java.util.function.BiFunction;
 
 @FunctionalInterface
-public interface RecordProcessor extends Function<ReceiveReply.Record, Mono<Void>> {
+public interface RecordProcessor extends BiFunction<Integer, ReceiveReply.Record, Mono<Void>> {
 
 }

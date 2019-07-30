@@ -68,18 +68,18 @@ public class LiiklusAutoConfiguration {
 
     @Bean
     @ConditionalOnBean(RecordProcessor.class)
-    ApplicationRunner mainLoop(LiiklusClient liiklusClient, RecordProcessor recordProcessor) {
+    ApplicationRunner recordProcessorLoop(LiiklusClient liiklusClient, RecordProcessor recordProcessor) {
         var ackScheduler = Schedulers.newSingle("ack");
         return new LiiklusConsumerLoop(
                 liiklusClient,
                 properties,
-                records -> {
+                (partition, records) -> {
                     var ackInProgress = ReplayProcessor.cacheLastOrDefault(false);
                     var ackFinished = ackInProgress.filter(Boolean.FALSE::equals);
 
                     return records
                             .concatMap(
-                                    record -> Mono.defer(() -> recordProcessor.apply(record))
+                                    record -> Mono.defer(() -> recordProcessor.apply(partition, record))
                                             .log("processor", Level.SEVERE, SignalType.ON_ERROR)
                                             .retryWhen(it -> it.delayElements(Duration.ofSeconds(1)))
                                             .delaySubscription(ackFinished)
@@ -93,6 +93,5 @@ public class LiiklusAutoConfiguration {
                 }
         );
     }
-
 
 }
