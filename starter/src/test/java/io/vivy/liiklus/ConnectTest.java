@@ -2,6 +2,7 @@ package io.vivy.liiklus;
 
 import com.github.bsideup.liiklus.protocol.PublishReply;
 import org.junit.jupiter.api.Test;
+import org.mockito.internal.verification.AtLeast;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 
 import java.time.Duration;
@@ -21,6 +22,6 @@ public class ConnectTest extends AbstractIntegrationTest {
         PublishReply offset = liiklusPublisher.publish(key, key.getBytes()).block(Duration.ofSeconds(5));
 
         waitForLiiklusOffset(offset);
-        verify(loggingRecordProcessor).apply(any());
+        verify(loggingRecordProcessor, new AtLeast(1)).apply(any());
     }
 }
