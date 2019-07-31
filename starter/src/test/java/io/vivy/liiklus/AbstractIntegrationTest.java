@@ -12,8 +12,10 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.boot.web.server.LocalServerPort;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.testcontainers.containers.GenericContainer;
 
@@ -27,10 +29,12 @@ import static org.awaitility.Awaitility.await;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(
-        classes = {TestApplication.class},
-        webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT
+        classes = {AbstractIntegrationTest.WithRecordProcessor.class},
+        webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
+        properties = {
+                "liiklus.groupName=${random.uuid}-consumer",
+        }
 )
-
 public class AbstractIntegrationTest {
 
     static {
@@ -43,10 +47,20 @@ public class AbstractIntegrationTest {
         System.getProperties().putAll(Map.of(
                 "liiklus.target", "rsocket://" + liiklus.getContainerIpAddress() + ":" + liiklus.getMappedPort(8081),
                 "liiklus.topic", "user-event-log",
-                "liiklus.groupName", "consumer",
                 "liiklus.groupVersion", "1",
                 "liiklus.ackInterval", "10ms"
         ));
+    }
+
+    @Configuration
+    @Import(TestApplication.class)
+    public static class WithRecordProcessor {
+
+        @Bean
+        public LoggingRecordProcessor loggingRecordProcessor() {
+            return new LoggingRecordProcessor();
+        }
+
     }
 
     @Autowired
@@ -57,9 +71,6 @@ public class AbstractIntegrationTest {
 
     @Autowired
     protected LiiklusProperties liiklusProperties;
-
-    @SpyBean
-    protected LoggingRecordProcessor loggingRecordProcessor;
 
     @LocalServerPort
     private int port;

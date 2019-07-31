@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -67,19 +68,33 @@ public class LiiklusAutoConfiguration {
     }
 
     @Bean
+    @ConditionalOnBean(PartitionAwareProcessor.class)
+    ApplicationRunner liiklusLoop(LiiklusClient liiklusClient, PartitionAwareProcessor partitionAwareProcessor) {
+        return createLiiklusRunner(liiklusClient, partitionAwareProcessor);
+    }
+
+    @Bean
     @ConditionalOnBean(RecordProcessor.class)
-    ApplicationRunner mainLoop(LiiklusClient liiklusClient, RecordProcessor recordProcessor) {
+    @ConditionalOnMissingBean(PartitionAwareProcessor.class)
+    ApplicationRunner legacyLiiklusLoop(LiiklusClient liiklusClient, RecordProcessor recordProcessor) {
+        return createLiiklusRunner(liiklusClient, (__, record) -> recordProcessor.apply(record));
+    }
+
+    private ApplicationRunner createLiiklusRunner(
+            LiiklusClient liiklusClient,
+            PartitionAwareProcessor partitionAwareProcessor
+    ) {
         var ackScheduler = Schedulers.newSingle("ack");
         return new LiiklusConsumerLoop(
                 liiklusClient,
                 properties,
-                records -> {
+                (partition, records) -> {
                     var ackInProgress = ReplayProcessor.cacheLastOrDefault(false);
                     var ackFinished = ackInProgress.filter(Boolean.FALSE::equals);
 
                     return records
                             .concatMap(
-                                    record -> Mono.defer(() -> recordProcessor.apply(record))
+                                    record -> Mono.defer(() -> partitionAwareProcessor.apply(partition, record))
                                             .log("processor", Level.SEVERE, SignalType.ON_ERROR)
                                             .retryWhen(it -> it.delayElements(Duration.ofSeconds(1)))
                                             .delaySubscription(ackFinished)
@@ -93,6 +108,5 @@ public class LiiklusAutoConfiguration {
                 }
         );
     }
-
 
 }

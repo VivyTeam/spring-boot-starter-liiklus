@@ -20,6 +20,7 @@ import reactor.core.publisher.SignalType;
 import reactor.core.scheduler.Schedulers;
 
 import java.time.Duration;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.logging.Level;
 
@@ -31,7 +32,7 @@ public class LiiklusConsumerLoop implements ApplicationRunner, AutoCloseable {
 
     final LiiklusProperties properties;
 
-    final Function<Flux<ReceiveReply.Record>, Publisher<Long>> liiklusRecordProcessor;
+    final BiFunction<Integer, Flux<ReceiveReply.Record>, Publisher<Long>> liiklusRecordProcessor;
 
     Disposable disposable;
 
@@ -56,7 +57,7 @@ public class LiiklusConsumerLoop implements ApplicationRunner, AutoCloseable {
                             .switchMap(assignment -> client.receive(ReceiveRequest.newBuilder().setAssignment(assignment).build()))
                             .filter(ReceiveReply::hasRecord)
                             .map(ReceiveReply::getRecord)
-                            .compose(liiklusRecordProcessor)
+                            .compose(it -> liiklusRecordProcessor.apply(partition, it))
                             .flatMap(offset -> sendAck(partition, offset), 1, 1);
                 }, Integer.MAX_VALUE, Integer.MAX_VALUE)
                 .log("mainLoop", Level.WARNING, SignalType.ON_ERROR)
