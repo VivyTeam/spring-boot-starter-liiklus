@@ -9,7 +9,9 @@ public interface EventLogProcessor<T> extends Function<EventLogProcessor.Event<T
 
     interface Event<T> {
 
-        int getPartition();
+        default int getPartition() {
+            throw new IllegalStateException("Not implemented");
+        }
 
         long getOffset();
 
