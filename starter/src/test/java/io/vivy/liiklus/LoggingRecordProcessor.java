@@ -10,15 +10,18 @@ import reactor.core.publisher.Mono;
 import java.time.Instant;
 
 @Slf4j
-public class LoggingRecordProcessor implements RecordProcessor {
+public class LoggingRecordProcessor implements PartitionAwareProcessor {
 
     @Override
-    public Mono<Void> apply(ReceiveReply.Record record) {
+    public Mono<Void> apply(Integer part, ReceiveReply.Record record) {
         return ((EventLogProcessor<ReceiveReply.Record>) recordEvent -> {
-            log.info("Received record: {}:{}", recordEvent.getOffset(), recordEvent.getValue());
+            log.info("Received record: {}:{}:{}", recordEvent.getPartition(), recordEvent.getOffset(), recordEvent.getValue());
             return Mono.empty();
         })
                 .apply(new EventLogProcessor.Event<>() {
+
+                    @Getter
+                    private final int partition = part;
 
                     @Getter
                     private final long offset = record.getOffset();
