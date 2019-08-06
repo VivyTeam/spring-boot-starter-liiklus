@@ -9,6 +9,7 @@ import java.time.Duration;
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.verify;
 
 public class ConnectTest extends AbstractIntegrationTest {
@@ -22,6 +23,6 @@ public class ConnectTest extends AbstractIntegrationTest {
         PublishReply offset = liiklusPublisher.publish(key, key.getBytes()).block(Duration.ofSeconds(5));
 
         waitForLiiklusOffset(offset);
-        verify(loggingRecordProcessor, new AtLeast(1)).apply(any());
+        verify(loggingRecordProcessor, new AtLeast(1)).apply(anyInt(), any());
     }
 }

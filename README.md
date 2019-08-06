@@ -38,13 +38,13 @@ public class LiiklusConfiguration {
     ObjectMapper objectMapper;
 
     @Bean
-    RecordProcessor recordProcessor(EventLogProcessor<UserEvent> eventLogProcessor) {
+    PartitionAwareProcessor recordProcessor(EventLogProcessor<UserEvent> eventLogProcessor) {
         ObjectMapper flexibleObjectMapper = objectMapper.copy()
                 // in case you don't want to fail message processing on parse
                 .disable(DeserializationFeature.FAIL_ON_INVALID_SUBTYPE)
                 .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
 
-        return record -> {
+        return (recordPartition, record) -> {
             final UserEvent userEvent;
             try {
                 userEvent = flexibleObjectMapper.readValue(record.getValue().toByteArray(), UserEvent.class);
@@ -58,11 +58,12 @@ public class LiiklusConfiguration {
             return eventLogProcessor
                     .apply(
                             new EventLogProcessor.Event<>() {
+                                
+                                @Getter
+                                private final int partition = recordPartition;
 
-                                @Override
-                                public boolean isReplay() {
-                                    return record.getReplay();
-                                }
+                                @Getter
+                                public final boolean replay = record.getReplay();
 
                                 @Getter(lazy = true)
                                 private final String key = record.getKey().toStringUtf8();
