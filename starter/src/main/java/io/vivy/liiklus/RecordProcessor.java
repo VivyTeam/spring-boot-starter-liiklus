@@ -5,6 +5,10 @@ import reactor.core.publisher.Mono;
 
 import java.util.function.Function;
 
+/**
+ * Simple version of the {@link io.vivy.liiklus.PartitionAwareProcessor},
+ * which doesn't care about partition.
+ */
 @FunctionalInterface
 public interface RecordProcessor extends Function<ReceiveReply.Record, Mono<Void>> {
 

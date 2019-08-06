@@ -69,14 +69,14 @@ public class LiiklusAutoConfiguration {
 
     @Bean
     @ConditionalOnBean(PartitionAwareProcessor.class)
-    ApplicationRunner liiklusLoop(LiiklusClient liiklusClient, PartitionAwareProcessor partitionAwareProcessor) {
+    ApplicationRunner partitionAwareLiiklusLoop(LiiklusClient liiklusClient, PartitionAwareProcessor partitionAwareProcessor) {
         return createLiiklusRunner(liiklusClient, partitionAwareProcessor);
     }
 
     @Bean
     @ConditionalOnBean(RecordProcessor.class)
     @ConditionalOnMissingBean(PartitionAwareProcessor.class)
-    ApplicationRunner legacyLiiklusLoop(LiiklusClient liiklusClient, RecordProcessor recordProcessor) {
+    ApplicationRunner partitionUnawareLiiklusLoop(LiiklusClient liiklusClient, RecordProcessor recordProcessor) {
         return createLiiklusRunner(liiklusClient, (__, record) -> recordProcessor.apply(record));
     }
 
