@@ -30,7 +30,8 @@ public class AbstractIntegrationTest {
         liiklus.start();
 
         System.getProperties().putAll(Map.of(
-                "liiklus.target", "rsocket://" + liiklus.getContainerIpAddress() + ":" + liiklus.getMappedPort(8081),
+                "liiklus.read.uri", "rsocket://" + liiklus.getContainerIpAddress() + ":" + liiklus.getMappedPort(8081),
+                "liiklus.write.uri", "rsocket://" + liiklus.getContainerIpAddress() + ":" + liiklus.getMappedPort(8081),
                 "liiklus.topic", "user-event-log",
                 "liiklus.groupVersion", "1",
                 "liiklus.ackInterval", "10ms"
