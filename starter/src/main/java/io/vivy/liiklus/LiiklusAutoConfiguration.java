@@ -54,6 +54,10 @@ public class LiiklusAutoConfiguration {
     LiiklusProperties properties;
 
     private static LiiklusClient createClient(URI targetURI) {
+        if (targetURI == null) {
+            return new ComplainingLiiklusClient();
+        }
+
         switch (targetURI.getScheme()) {
             case RSOCKET_TRANSPORT:
                 return rsocket(targetURI);
@@ -177,4 +181,35 @@ public class LiiklusAutoConfiguration {
         );
     }
 
+    private static class ComplainingLiiklusClient implements LiiklusClient {
+        @Override
+        public Mono<PublishReply> publish(PublishRequest message) {
+            return Mono.error(new IllegalCallerException("liiklus write target is undefined"));
+        }
+
+        @Override
+        public Flux<SubscribeReply> subscribe(SubscribeRequest message) {
+            return Flux.error(new IllegalCallerException("liiklus read target is undefined"));
+        }
+
+        @Override
+        public Flux<ReceiveReply> receive(ReceiveRequest message) {
+            return Flux.error(new IllegalCallerException("liiklus read target is undefined"));
+        }
+
+        @Override
+        public Mono<Empty> ack(AckRequest message) {
+            return Mono.error(new IllegalCallerException("liiklus read target is undefined"));
+        }
+
+        @Override
+        public Mono<GetOffsetsReply> getOffsets(GetOffsetsRequest message) {
+            return Mono.error(new IllegalCallerException("liiklus read target is undefined"));
+        }
+
+        @Override
+        public Mono<GetEndOffsetsReply> getEndOffsets(GetEndOffsetsRequest message) {
+            return Mono.error(new IllegalCallerException("liiklus read target is undefined"));
+        }
+    }
 }
