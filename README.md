@@ -19,7 +19,7 @@ liiklus.target=grpc://liiklus:6565
 
 // or read/write separately, target will be used as a fallback
 liiklus.read.uri=grpc://liiklus:6565
-liiklus.write.uri==rsocket://liiklus:8081
+liiklus.write.uri=rsocket://liiklus:8081
 
 liiklus.topic=topic
 liiklus.groupName=group
