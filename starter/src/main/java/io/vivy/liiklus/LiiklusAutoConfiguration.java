@@ -4,6 +4,8 @@ import com.github.bsideup.liiklus.GRPCLiiklusClient;
 import com.github.bsideup.liiklus.LiiklusClient;
 import com.github.bsideup.liiklus.RSocketLiiklusClient;
 import com.github.bsideup.liiklus.protocol.AckRequest;
+import com.github.bsideup.liiklus.protocol.GetEndOffsetsReply;
+import com.github.bsideup.liiklus.protocol.GetEndOffsetsRequest;
 import com.github.bsideup.liiklus.protocol.GetOffsetsReply;
 import com.github.bsideup.liiklus.protocol.GetOffsetsRequest;
 import com.github.bsideup.liiklus.protocol.PublishReply;
@@ -114,6 +116,11 @@ public class LiiklusAutoConfiguration {
             @Override
             public Mono<GetOffsetsReply> getOffsets(GetOffsetsRequest message) {
                 return readClient.getOffsets(message);
+            }
+
+            @Override
+            public Mono<GetEndOffsetsReply> getEndOffsets(GetEndOffsetsRequest message) {
+                return readClient.getEndOffsets(message);
             }
         };
     }
