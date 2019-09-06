@@ -4,19 +4,14 @@ import com.github.bsideup.liiklus.LiiklusClient;
 import com.github.bsideup.liiklus.container.LiiklusContainer;
 import com.github.bsideup.liiklus.protocol.GetOffsetsRequest;
 import com.github.bsideup.liiklus.protocol.PublishReply;
-import io.vivy.liiklus.support.LoggingRecordProcessor;
 import org.assertj.core.api.Condition;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.TestConfiguration;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Import;
-import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.lifecycle.Startables;
 
 import java.time.Duration;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
@@ -24,13 +19,15 @@ import static org.awaitility.Awaitility.await;
 public class AbstractIntegrationTest {
 
     static {
-        LiiklusContainer liiklus = new LiiklusContainer("0.9.0")
-                .withExposedPorts(8081);
+        var liiklus = new LiiklusContainer("0.9.0")
+                .withExposedPorts(6565, 8081);
 
-        liiklus.start();
+
+        Startables.deepStart(List.of(liiklus)).join();
 
         System.getProperties().putAll(Map.of(
-                "liiklus.target", "rsocket://" + liiklus.getContainerIpAddress() + ":" + liiklus.getMappedPort(8081),
+                "liiklus.write.uri", "grpc://" + liiklus.getContainerIpAddress() + ":" + liiklus.getMappedPort(6565),
+                "liiklus.read.uri", "rsocket://" + liiklus.getContainerIpAddress() + ":" + liiklus.getMappedPort(8081),
                 "liiklus.topic", "user-event-log",
                 "liiklus.groupVersion", "1",
                 "liiklus.ackInterval", "10ms"

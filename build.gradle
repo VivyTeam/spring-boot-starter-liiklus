@@ -24,12 +24,12 @@ allprojects {
         overriddenByDependencies = false
 
         imports {
-            mavenBom 'org.springframework.boot:spring-boot-dependencies:2.1.3.RELEASE'
+            mavenBom 'org.springframework.boot:spring-boot-dependencies:2.1.8.RELEASE'
         }
 
         testCompile {
             imports {
-                mavenBom 'org.testcontainers:testcontainers-bom:1.10.6'
+                mavenBom 'org.testcontainers:testcontainers-bom:1.12.0'
             }
         }
 

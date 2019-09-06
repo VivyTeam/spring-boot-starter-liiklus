@@ -3,6 +3,18 @@ package io.vivy.liiklus;
 import com.github.bsideup.liiklus.GRPCLiiklusClient;
 import com.github.bsideup.liiklus.LiiklusClient;
 import com.github.bsideup.liiklus.RSocketLiiklusClient;
+import com.github.bsideup.liiklus.protocol.AckRequest;
+import com.github.bsideup.liiklus.protocol.GetEndOffsetsReply;
+import com.github.bsideup.liiklus.protocol.GetEndOffsetsRequest;
+import com.github.bsideup.liiklus.protocol.GetOffsetsReply;
+import com.github.bsideup.liiklus.protocol.GetOffsetsRequest;
+import com.github.bsideup.liiklus.protocol.PublishReply;
+import com.github.bsideup.liiklus.protocol.PublishRequest;
+import com.github.bsideup.liiklus.protocol.ReceiveReply;
+import com.github.bsideup.liiklus.protocol.ReceiveRequest;
+import com.github.bsideup.liiklus.protocol.SubscribeReply;
+import com.github.bsideup.liiklus.protocol.SubscribeRequest;
+import com.google.protobuf.Empty;
 import io.grpc.ManagedChannel;
 import io.grpc.netty.NettyChannelBuilder;
 import io.rsocket.RSocket;
@@ -17,6 +29,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.validation.Validator;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.publisher.ReplayProcessor;
@@ -24,6 +37,7 @@ import reactor.core.publisher.SignalType;
 import reactor.core.scheduler.Schedulers;
 
 import java.net.InetSocketAddress;
+import java.net.URI;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
@@ -34,32 +48,90 @@ import java.util.logging.Level;
 @Slf4j
 public class LiiklusAutoConfiguration {
 
+    private static final String RSOCKET_TRANSPORT = "rsocket";
+
     @Autowired
     LiiklusProperties properties;
 
-    @Bean
-    LiiklusClient liiklusClient() {
-        var targetURI = properties.getTargetURI();
+    private static LiiklusClient createClient(URI targetURI) {
+        if (targetURI == null) {
+            return new ComplainingLiiklusClient();
+        }
 
         switch (targetURI.getScheme()) {
-            case "rsocket":
-                TcpClientTransport transport = TcpClientTransport.create(new InetSocketAddress(targetURI.getHost(), targetURI.getPort()));
-                RSocket rSocket = RSocketFactory.connect()
-                        .transport(transport)
-                        .start()
-                        .block();
-
-                return new RSocketLiiklusClient(rSocket);
+            case RSOCKET_TRANSPORT:
+                return rsocket(targetURI);
             default:
-                ManagedChannel channel = NettyChannelBuilder.forAddress(targetURI.getHost(), targetURI.getPort())
-                        .directExecutor()
-                        .usePlaintext()
-                        .keepAliveWithoutCalls(true)
-                        .keepAliveTime(150, TimeUnit.SECONDS)
-                        .build();
-
-                return new GRPCLiiklusClient(channel);
+                return grpc(targetURI);
         }
+    }
+
+    private static LiiklusClient rsocket(URI targetURI) {
+        TcpClientTransport transport = TcpClientTransport.create(new InetSocketAddress(targetURI.getHost(), targetURI.getPort()));
+        RSocket rSocket = RSocketFactory.connect()
+                .transport(transport)
+                .start()
+                .block();
+
+        return new RSocketLiiklusClient(rSocket);
+    }
+
+    private static LiiklusClient grpc(URI targetURI) {
+        ManagedChannel channel = NettyChannelBuilder.forAddress(targetURI.getHost(), targetURI.getPort())
+                .directExecutor()
+                .usePlaintext()
+                .keepAliveWithoutCalls(true)
+                .keepAliveTime(150, TimeUnit.SECONDS)
+                .build();
+
+        return new GRPCLiiklusClient(channel);
+    }
+
+
+    @Bean
+    LiiklusClient liiklusClient() {
+        var read = properties.getRead() == null ? properties.getTarget() : properties.getRead().getUri();
+        var write = properties.getWrite() == null ? properties.getTarget() : properties.getWrite().getUri();
+
+        var readClient = createClient(read);
+        var writeClient = createClient(write);
+
+        return new LiiklusClient() {
+            @Override
+            public Mono<PublishReply> publish(PublishRequest message) {
+                return writeClient.publish(message);
+            }
+
+            @Override
+            public Flux<SubscribeReply> subscribe(SubscribeRequest message) {
+                return readClient.subscribe(message);
+            }
+
+            @Override
+            public Flux<ReceiveReply> receive(ReceiveRequest message) {
+                return readClient.receive(message);
+            }
+
+            @Override
+            public Mono<Empty> ack(AckRequest message) {
+                return readClient.ack(message);
+            }
+
+            @Override
+            public Mono<GetOffsetsReply> getOffsets(GetOffsetsRequest message) {
+                return readClient.getOffsets(message);
+            }
+
+            @Override
+            public Mono<GetEndOffsetsReply> getEndOffsets(GetEndOffsetsRequest message) {
+                return readClient.getEndOffsets(message);
+            }
+        };
+    }
+
+    @Bean
+    public static Validator configurationPropertiesValidator() {
+        return new LiiklusProperties.LiiklusPropertiesValidator();
     }
 
     @Bean
@@ -109,4 +181,35 @@ public class LiiklusAutoConfiguration {
         );
     }
 
+    private static class ComplainingLiiklusClient implements LiiklusClient {
+        @Override
+        public Mono<PublishReply> publish(PublishRequest message) {
+            return Mono.error(new IllegalCallerException("liiklus write target is undefined"));
+        }
+
+        @Override
+        public Flux<SubscribeReply> subscribe(SubscribeRequest message) {
+            return Flux.error(new IllegalCallerException("liiklus read target is undefined"));
+        }
+
+        @Override
+        public Flux<ReceiveReply> receive(ReceiveRequest message) {
+            return Flux.error(new IllegalCallerException("liiklus read target is undefined"));
+        }
+
+        @Override
+        public Mono<Empty> ack(AckRequest message) {
+            return Mono.error(new IllegalCallerException("liiklus read target is undefined"));
+        }
+
+        @Override
+        public Mono<GetOffsetsReply> getOffsets(GetOffsetsRequest message) {
+            return Mono.error(new IllegalCallerException("liiklus read target is undefined"));
+        }
+
+        @Override
+        public Mono<GetEndOffsetsReply> getEndOffsets(GetEndOffsetsRequest message) {
+            return Mono.error(new IllegalCallerException("liiklus read target is undefined"));
+        }
+    }
 }

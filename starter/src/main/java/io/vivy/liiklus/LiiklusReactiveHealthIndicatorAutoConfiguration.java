@@ -9,6 +9,7 @@ import org.springframework.boot.actuate.health.ReactiveHealthIndicator;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import reactor.core.publisher.Flux;
@@ -32,25 +33,49 @@ public class LiiklusReactiveHealthIndicatorAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean(name = "liiklusHealthIndicator")
+    @ConditionalOnProperty(prefix = "liiklus", value = "target")
     ReactiveHealthIndicator liiklusHealthIndicator() {
-        URI uri = properties.getTargetURI();
+        return new LiiklusReactiveHealthIndicator(
+                properties.getTarget()
+        );
+    }
 
-        return new AbstractReactiveHealthIndicator() {
-            @Override
-            protected Mono<Health> doHealthCheck(Health.Builder builder) {
-                return Mono
-                        .fromSupplier(() -> {
-                            try (Socket socket = new Socket()) {
-                                socket.connect(new InetSocketAddress(uri.getHost(), uri.getPort()), 1000);
-                                return builder.up().build();
-                            } catch (IOException e) {
-                                throw new UncheckedIOException(e);
-                            }
-                        })
-                        .retry(3)
-                        .subscribeOn(Schedulers.immediate())
-                        .onErrorResume(__ -> Mono.just(builder.down().build()));
-            }
-        };
+    @Bean
+    @ConditionalOnMissingBean(name = "liiklusReadHealthIndicator")
+    @ConditionalOnProperty(prefix = "liiklus", value = "read.uri")
+    ReactiveHealthIndicator liiklusReadHealthIndicator() {
+        return new LiiklusReactiveHealthIndicator(
+                properties.getRead().getUri()
+        );
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(name = "liiklusWriteHealthIndicator")
+    @ConditionalOnProperty(prefix = "liiklus", value = "write.uri")
+    ReactiveHealthIndicator liiklusWriteHealthIndicator() {
+        return new LiiklusReactiveHealthIndicator(
+                properties.getWrite().getUri()
+        );
+    }
+
+    @RequiredArgsConstructor
+    private static class LiiklusReactiveHealthIndicator extends AbstractReactiveHealthIndicator {
+        private final URI uri;
+
+        @Override
+        protected Mono<Health> doHealthCheck(Health.Builder builder) {
+            return Mono
+                    .fromSupplier(() -> {
+                        try (Socket socket = new Socket()) {
+                            socket.connect(new InetSocketAddress(uri.getHost(), uri.getPort()), 1000);
+                            return builder.up().build();
+                        } catch (IOException e) {
+                            throw new UncheckedIOException(e);
+                        }
+                    })
+                    .retry(3)
+                    .subscribeOn(Schedulers.immediate())
+                    .onErrorResume(__ -> Mono.just(builder.down().build()));
+        }
     }
 }
