@@ -15,7 +15,12 @@ and to module
 define properties to connect to liiklus
 
 ```java
-liiklus.target=grpc://liiklus:8080
+liiklus.target=grpc://liiklus:6565
+
+// or read/write separately, target will be used as a fallback
+liiklus.read.uri=grpc://liiklus:6565
+liiklus.write.uri==rsocket://liiklus:8081
+
 liiklus.topic=topic
 liiklus.groupName=group
 liiklus.groupVersion=2
@@ -88,3 +93,7 @@ public class LiiklusConfiguration {
 ### To produce the messages
 
 Just inject `io.vivy.liiklus.LiiklusPublisher` and use `Mono<PublishReply> publish(String key, byte[] value)` method
+
+### Read/Write separation note
+
+In case only read or only write will be defined - all operations which don't have the uri specified will fail in runtime 
