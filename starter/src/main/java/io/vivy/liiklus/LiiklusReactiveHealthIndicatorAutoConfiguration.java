@@ -21,7 +21,6 @@ import java.io.UncheckedIOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.URI;
-import java.util.function.Supplier;
 
 @Configuration
 @ConditionalOnClass({LiiklusClient.class, Flux.class, AbstractReactiveHealthIndicator.class})
@@ -33,48 +32,50 @@ public class LiiklusReactiveHealthIndicatorAutoConfiguration {
     final LiiklusProperties properties;
 
     @Bean
-    @ConditionalOnMissingBean(name = "liiklusReadHealthIndicator")
-    ReactiveHealthIndicator liiklusReadHealthIndicator() {
-        URI uri = properties.getReadUri();
+    @ConditionalOnMissingBean(name = "liiklusHealthIndicator")
+    @ConditionalOnProperty(prefix = "liiklus", value = "target")
+    ReactiveHealthIndicator liiklusHealthIndicator() {
+        return new LiiklusReactiveHealthIndicator(
+                properties.getTarget()
+        );
+    }
 
-        return new AbstractReactiveHealthIndicator() {
-            @Override
-            protected Mono<Health> doHealthCheck(Health.Builder builder) {
-                return Mono
-                        .fromSupplier(liiklusHealth(builder, uri))
-                        .retry(3)
-                        .subscribeOn(Schedulers.immediate())
-                        .onErrorResume(__ -> Mono.just(builder.down().build()));
-            }
-        };
+    @Bean
+    @ConditionalOnMissingBean(name = "liiklusReadHealthIndicator")
+    @ConditionalOnProperty(prefix = "liiklus", value = "read.uri")
+    ReactiveHealthIndicator liiklusReadHealthIndicator() {
+        return new LiiklusReactiveHealthIndicator(
+                properties.getRead().getUri()
+        );
     }
 
     @Bean
     @ConditionalOnMissingBean(name = "liiklusWriteHealthIndicator")
     @ConditionalOnProperty(prefix = "liiklus", value = "write.uri")
     ReactiveHealthIndicator liiklusWriteHealthIndicator() {
-        URI uri = properties.getWriteUri();
-
-        return new AbstractReactiveHealthIndicator() {
-            @Override
-            protected Mono<Health> doHealthCheck(Health.Builder builder) {
-                return Mono
-                        .fromSupplier(liiklusHealth(builder, uri))
-                        .retry(3)
-                        .subscribeOn(Schedulers.immediate())
-                        .onErrorResume(__ -> Mono.just(builder.down().build()));
-            }
-        };
+        return new LiiklusReactiveHealthIndicator(
+                properties.getWrite().getUri()
+        );
     }
 
-    private Supplier<Health> liiklusHealth(Health.Builder builder, URI uri) {
-        return () -> {
-            try (Socket socket = new Socket()) {
-                socket.connect(new InetSocketAddress(uri.getHost(), uri.getPort()), 1000);
-                return builder.up().build();
-            } catch (IOException e) {
-                throw new UncheckedIOException(e);
-            }
-        };
+    @RequiredArgsConstructor
+    private static class LiiklusReactiveHealthIndicator extends AbstractReactiveHealthIndicator {
+        private final URI uri;
+
+        @Override
+        protected Mono<Health> doHealthCheck(Health.Builder builder) {
+            return Mono
+                    .fromSupplier(() -> {
+                        try (Socket socket = new Socket()) {
+                            socket.connect(new InetSocketAddress(uri.getHost(), uri.getPort()), 1000);
+                            return builder.up().build();
+                        } catch (IOException e) {
+                            throw new UncheckedIOException(e);
+                        }
+                    })
+                    .retry(3)
+                    .subscribeOn(Schedulers.immediate())
+                    .onErrorResume(__ -> Mono.just(builder.down().build()));
+        }
     }
 }

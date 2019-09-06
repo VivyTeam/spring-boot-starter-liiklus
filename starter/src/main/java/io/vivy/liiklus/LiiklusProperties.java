@@ -1,6 +1,8 @@
 package io.vivy.liiklus;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.validation.Errors;
 import org.springframework.validation.Validator;
@@ -42,20 +44,13 @@ public class LiiklusProperties {
         return target;
     }
 
-    public URI getReadUri() {
-        return read == null ? target : read.getUri();
-    }
-
-    public URI getWriteUri() {
-        return write == null ? target : write.getUri();
-    }
-
     @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
     public static class Target {
         @NotNull
         URI uri;
     }
-
 
     public static class LiiklusPropertiesValidator implements Validator {
         @Override
@@ -67,8 +62,12 @@ public class LiiklusProperties {
         public void validate(Object o, Errors errors) {
             var properties = (LiiklusProperties) o;
 
-            if (properties.getTarget() == null && (properties.getRead() == null || properties.getWrite() == null)) {
-                errors.reject("target", "target or read.uri and write.uri should be non-empty URI");
+            if (properties.getTarget() == null && properties.getRead() == null && properties.getWrite() == null) {
+                errors.reject("target", "at least one of the target, read.uri or write.uri should be non-empty URI");
+            }
+
+            if (properties.getTarget() != null && (properties.getRead() != null || properties.getWrite() != null)) {
+                errors.reject("target", "either target or read.uri and write.uri can be non-empty URI");
             }
         }
     }

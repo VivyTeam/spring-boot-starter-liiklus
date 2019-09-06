@@ -42,7 +42,7 @@ public class AbstractIntegrationTest {
     protected LiiklusPublisher liiklusPublisher;
 
     @Autowired
-    protected LiiklusClient liiklusClient;
+    protected LiiklusClient readLiiklusClient;
 
     @Autowired
     protected LiiklusProperties liiklusProperties;
@@ -59,7 +59,7 @@ public class AbstractIntegrationTest {
                     "Offset is >= then " + latestOffset.getOffset()
             );
 
-            assertThat(liiklusClient.getOffsets(getOffsetsRequest).block(Duration.ofSeconds(5)).getOffsetsMap())
+            assertThat(readLiiklusClient.getOffsets(getOffsetsRequest).block(Duration.ofSeconds(5)).getOffsetsMap())
                     .hasEntrySatisfying(latestOffset.getPartition(), offsetCondition);
         });
 

@@ -15,6 +15,7 @@ import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -42,41 +43,20 @@ public class LiiklusAutoConfiguration {
 
     private static final String WRITE_LIIKLUS_CLIENT_QUALIFIER = "writeLiiklusClient";
 
+    private static final String LIIKLUS_CLIENT_QUALIFIER = "liiklusClient";
+
     private static final String RSOCKET_TRANSPORT = "rsocket";
 
     @Autowired
     LiiklusProperties properties;
 
-    @Bean
-    @Primary
-    @Qualifier(READ_LIIKLUS_CLIENT_QUALIFIER)
-    LiiklusClient readLiiklusClient() {
-        var targetURI = properties.getReadUri();
-
+    private static LiiklusClient createClient(URI targetURI) {
         switch (targetURI.getScheme()) {
             case RSOCKET_TRANSPORT:
                 return rsocket(targetURI);
             default:
                 return grpc(targetURI);
         }
-    }
-
-    @Bean
-    @Qualifier(WRITE_LIIKLUS_CLIENT_QUALIFIER)
-    LiiklusClient writeLiiklusClient() {
-        var targetURI = properties.getWriteUri();
-
-        switch (targetURI.getScheme()) {
-            case RSOCKET_TRANSPORT:
-                return rsocket(targetURI);
-            default:
-                return grpc(targetURI);
-        }
-    }
-
-    @Bean
-    public static Validator configurationPropertiesValidator() {
-        return new LiiklusProperties.LiiklusPropertiesValidator();
     }
 
     private static LiiklusClient rsocket(URI targetURI) {
@@ -100,6 +80,37 @@ public class LiiklusAutoConfiguration {
         return new GRPCLiiklusClient(channel);
     }
 
+
+    @Bean({LIIKLUS_CLIENT_QUALIFIER, READ_LIIKLUS_CLIENT_QUALIFIER, WRITE_LIIKLUS_CLIENT_QUALIFIER})
+    @Primary
+    @ConditionalOnProperty(prefix = "liiklus", value = "target")
+    LiiklusClient liiklusClient() {
+        var targetURI = properties.getTarget();
+
+        return createClient(targetURI);
+    }
+
+    @Bean(READ_LIIKLUS_CLIENT_QUALIFIER)
+    @ConditionalOnProperty(prefix = "liiklus", value = "read.uri")
+    LiiklusClient readLiiklusClient() {
+        var targetURI = properties.getRead().getUri();
+
+        return createClient(targetURI);
+    }
+
+    @Bean(WRITE_LIIKLUS_CLIENT_QUALIFIER)
+    @ConditionalOnProperty(prefix = "liiklus", value = "write.uri")
+    LiiklusClient writeLiiklusClient() {
+        var targetURI = properties.getWrite().getUri();
+
+        return createClient(targetURI);
+    }
+
+    @Bean
+    public static Validator configurationPropertiesValidator() {
+        return new LiiklusProperties.LiiklusPropertiesValidator();
+    }
+
     @Bean
     @ConditionalOnBean(name = WRITE_LIIKLUS_CLIENT_QUALIFIER, value = LiiklusClient.class)
     LiiklusPublisher liiklusPublisher(@Qualifier(WRITE_LIIKLUS_CLIENT_QUALIFIER) LiiklusClient writeLiiklusClient) {
@@ -107,13 +118,13 @@ public class LiiklusAutoConfiguration {
     }
 
     @Bean
-    @ConditionalOnBean(PartitionAwareProcessor.class)
+    @ConditionalOnBean(name = READ_LIIKLUS_CLIENT_QUALIFIER, value = {PartitionAwareProcessor.class, LiiklusClient.class})
     ApplicationRunner partitionAwareLiiklusLoop(@Qualifier(READ_LIIKLUS_CLIENT_QUALIFIER) LiiklusClient readLiiklusClient, PartitionAwareProcessor partitionAwareProcessor) {
         return createLiiklusRunner(readLiiklusClient, partitionAwareProcessor);
     }
 
     @Bean
-    @ConditionalOnBean(RecordProcessor.class)
+    @ConditionalOnBean(name = READ_LIIKLUS_CLIENT_QUALIFIER, value = {RecordProcessor.class, LiiklusClient.class})
     @ConditionalOnMissingBean(PartitionAwareProcessor.class)
     ApplicationRunner partitionUnawareLiiklusLoop(@Qualifier(READ_LIIKLUS_CLIENT_QUALIFIER) LiiklusClient readLiiklusClient, RecordProcessor recordProcessor) {
         return createLiiklusRunner(readLiiklusClient, (__, record) -> recordProcessor.apply(record));
