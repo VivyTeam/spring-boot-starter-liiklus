@@ -67,7 +67,7 @@ public class LiiklusProperties {
             }
 
             if (properties.getTarget() != null && (properties.getRead() != null || properties.getWrite() != null)) {
-                errors.reject("target", "either target or read.uri and write.uri can be non-empty URI");
+                errors.reject("target", "either target or read.uri and write.uri must be null");
             }
         }
     }
