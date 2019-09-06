@@ -40,8 +40,12 @@ public class LiiklusProperties {
     @Min(1)
     int groupVersion = 1;
 
+    /**
+     * @deprecated use {@link #getTarget()} directly
+     */
+    @Deprecated
     public URI getTargetURI() {
-        return target;
+        return getTarget();
     }
 
     @Data
@@ -64,10 +68,6 @@ public class LiiklusProperties {
 
             if (properties.getTarget() == null && properties.getRead() == null && properties.getWrite() == null) {
                 errors.reject("target", "at least one of the target, read.uri or write.uri should be non-empty URI");
-            }
-
-            if (properties.getTarget() != null && (properties.getRead() != null || properties.getWrite() != null)) {
-                errors.reject("target", "either target or read.uri and write.uri must be null");
             }
         }
     }

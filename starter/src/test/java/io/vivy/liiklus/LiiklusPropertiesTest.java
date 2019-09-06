@@ -1,5 +1,6 @@
 package io.vivy.liiklus;
 
+import io.vivy.liiklus.LiiklusProperties.Target;
 import org.junit.jupiter.api.Test;
 import org.springframework.validation.BeanPropertyBindingResult;
 
@@ -10,16 +11,16 @@ import static org.assertj.core.api.Assertions.assertThat;
 class LiiklusPropertiesTest {
 
     @Test
-    void shouldExcludeTargetAndRead() {
+    void shouldAllowTargetAndRead() {
         var props = new LiiklusProperties();
         props.setTarget(URI.create("grpc://host"));
-        props.setRead(new LiiklusProperties.Target(URI.create("grpc://host")));
+        props.setRead(new Target(URI.create("grpc://host")));
 
         var errors = new BeanPropertyBindingResult(props, "props");
 
         new LiiklusProperties.LiiklusPropertiesValidator().validate(props, errors);
 
-        assertThat(errors.getAllErrors()).hasSize(1);
+        assertThat(errors.getAllErrors()).hasSize(0);
     }
 
     @Test
@@ -35,7 +36,7 @@ class LiiklusPropertiesTest {
     @Test
     void shouldAllowOnlyRead() {
         var props = new LiiklusProperties();
-        props.setRead(new LiiklusProperties.Target(URI.create("grpc://host")));
+        props.setRead(new Target(URI.create("grpc://host")));
 
         var errors = new BeanPropertyBindingResult(props, "props");
 

@@ -4,19 +4,12 @@ import com.github.bsideup.liiklus.LiiklusClient;
 import com.github.bsideup.liiklus.container.LiiklusContainer;
 import com.github.bsideup.liiklus.protocol.GetOffsetsRequest;
 import com.github.bsideup.liiklus.protocol.PublishReply;
-import io.vivy.liiklus.support.LoggingRecordProcessor;
 import org.assertj.core.api.Condition;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.TestConfiguration;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Import;
-import org.testcontainers.containers.GenericContainer;
 
 import java.time.Duration;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
@@ -42,7 +35,7 @@ public class AbstractIntegrationTest {
     protected LiiklusPublisher liiklusPublisher;
 
     @Autowired
-    protected LiiklusClient readLiiklusClient;
+    protected LiiklusClient liiklusClient;
 
     @Autowired
     protected LiiklusProperties liiklusProperties;
@@ -59,7 +52,7 @@ public class AbstractIntegrationTest {
                     "Offset is >= then " + latestOffset.getOffset()
             );
 
-            assertThat(readLiiklusClient.getOffsets(getOffsetsRequest).block(Duration.ofSeconds(5)).getOffsetsMap())
+            assertThat(liiklusClient.getOffsets(getOffsetsRequest).block(Duration.ofSeconds(5)).getOffsetsMap())
                     .hasEntrySatisfying(latestOffset.getPartition(), offsetCondition);
         });
 

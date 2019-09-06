@@ -3,6 +3,16 @@ package io.vivy.liiklus;
 import com.github.bsideup.liiklus.GRPCLiiklusClient;
 import com.github.bsideup.liiklus.LiiklusClient;
 import com.github.bsideup.liiklus.RSocketLiiklusClient;
+import com.github.bsideup.liiklus.protocol.AckRequest;
+import com.github.bsideup.liiklus.protocol.GetOffsetsReply;
+import com.github.bsideup.liiklus.protocol.GetOffsetsRequest;
+import com.github.bsideup.liiklus.protocol.PublishReply;
+import com.github.bsideup.liiklus.protocol.PublishRequest;
+import com.github.bsideup.liiklus.protocol.ReceiveReply;
+import com.github.bsideup.liiklus.protocol.ReceiveRequest;
+import com.github.bsideup.liiklus.protocol.SubscribeReply;
+import com.github.bsideup.liiklus.protocol.SubscribeRequest;
+import com.google.protobuf.Empty;
 import io.grpc.ManagedChannel;
 import io.grpc.netty.NettyChannelBuilder;
 import io.rsocket.RSocket;
@@ -10,16 +20,13 @@ import io.rsocket.RSocketFactory;
 import io.rsocket.transport.netty.client.TcpClientTransport;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Primary;
 import org.springframework.validation.Validator;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -38,12 +45,6 @@ import java.util.logging.Level;
 @ConditionalOnClass({LiiklusClient.class})
 @Slf4j
 public class LiiklusAutoConfiguration {
-
-    private static final String READ_LIIKLUS_CLIENT_QUALIFIER = "readLiiklusClient";
-
-    private static final String WRITE_LIIKLUS_CLIENT_QUALIFIER = "writeLiiklusClient";
-
-    private static final String LIIKLUS_CLIENT_QUALIFIER = "liiklusClient";
 
     private static final String RSOCKET_TRANSPORT = "rsocket";
 
@@ -81,29 +82,40 @@ public class LiiklusAutoConfiguration {
     }
 
 
-    @Bean({LIIKLUS_CLIENT_QUALIFIER, READ_LIIKLUS_CLIENT_QUALIFIER, WRITE_LIIKLUS_CLIENT_QUALIFIER})
-    @Primary
-    @ConditionalOnProperty(prefix = "liiklus", value = "target")
+    @Bean
     LiiklusClient liiklusClient() {
-        var targetURI = properties.getTarget();
+        var read = properties.getRead() == null ? properties.getTarget() : properties.getRead().getUri();
+        var write = properties.getWrite() == null ? properties.getTarget() : properties.getWrite().getUri();
 
-        return createClient(targetURI);
-    }
+        var readClient = createClient(read);
+        var writeClient = createClient(write);
 
-    @Bean(READ_LIIKLUS_CLIENT_QUALIFIER)
-    @ConditionalOnProperty(prefix = "liiklus", value = "read.uri")
-    LiiklusClient readLiiklusClient() {
-        var targetURI = properties.getRead().getUri();
+        return new LiiklusClient() {
+            @Override
+            public Mono<PublishReply> publish(PublishRequest message) {
+                return writeClient.publish(message);
+            }
 
-        return createClient(targetURI);
-    }
+            @Override
+            public Flux<SubscribeReply> subscribe(SubscribeRequest message) {
+                return readClient.subscribe(message);
+            }
 
-    @Bean(WRITE_LIIKLUS_CLIENT_QUALIFIER)
-    @ConditionalOnProperty(prefix = "liiklus", value = "write.uri")
-    LiiklusClient writeLiiklusClient() {
-        var targetURI = properties.getWrite().getUri();
+            @Override
+            public Flux<ReceiveReply> receive(ReceiveRequest message) {
+                return readClient.receive(message);
+            }
 
-        return createClient(targetURI);
+            @Override
+            public Mono<Empty> ack(AckRequest message) {
+                return readClient.ack(message);
+            }
+
+            @Override
+            public Mono<GetOffsetsReply> getOffsets(GetOffsetsRequest message) {
+                return readClient.getOffsets(message);
+            }
+        };
     }
 
     @Bean
@@ -112,22 +124,21 @@ public class LiiklusAutoConfiguration {
     }
 
     @Bean
-    @ConditionalOnBean(name = WRITE_LIIKLUS_CLIENT_QUALIFIER, value = LiiklusClient.class)
-    LiiklusPublisher liiklusPublisher(@Qualifier(WRITE_LIIKLUS_CLIENT_QUALIFIER) LiiklusClient writeLiiklusClient) {
-        return new LiiklusPublisher(writeLiiklusClient, properties.getTopic());
+    LiiklusPublisher liiklusPublisher(LiiklusClient liiklusClient) {
+        return new LiiklusPublisher(liiklusClient, properties.getTopic());
     }
 
     @Bean
-    @ConditionalOnBean(name = READ_LIIKLUS_CLIENT_QUALIFIER, value = {PartitionAwareProcessor.class, LiiklusClient.class})
-    ApplicationRunner partitionAwareLiiklusLoop(@Qualifier(READ_LIIKLUS_CLIENT_QUALIFIER) LiiklusClient readLiiklusClient, PartitionAwareProcessor partitionAwareProcessor) {
-        return createLiiklusRunner(readLiiklusClient, partitionAwareProcessor);
+    @ConditionalOnBean(PartitionAwareProcessor.class)
+    ApplicationRunner partitionAwareLiiklusLoop(LiiklusClient liiklusClient, PartitionAwareProcessor partitionAwareProcessor) {
+        return createLiiklusRunner(liiklusClient, partitionAwareProcessor);
     }
 
     @Bean
-    @ConditionalOnBean(name = READ_LIIKLUS_CLIENT_QUALIFIER, value = {RecordProcessor.class, LiiklusClient.class})
+    @ConditionalOnBean(RecordProcessor.class)
     @ConditionalOnMissingBean(PartitionAwareProcessor.class)
-    ApplicationRunner partitionUnawareLiiklusLoop(@Qualifier(READ_LIIKLUS_CLIENT_QUALIFIER) LiiklusClient readLiiklusClient, RecordProcessor recordProcessor) {
-        return createLiiklusRunner(readLiiklusClient, (__, record) -> recordProcessor.apply(record));
+    ApplicationRunner partitionUnawareLiiklusLoop(LiiklusClient liiklusClient, RecordProcessor recordProcessor) {
+        return createLiiklusRunner(liiklusClient, (__, record) -> recordProcessor.apply(record));
     }
 
     private ApplicationRunner createLiiklusRunner(
