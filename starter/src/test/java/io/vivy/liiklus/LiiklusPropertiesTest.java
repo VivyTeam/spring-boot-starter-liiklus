@@ -14,7 +14,7 @@ class LiiklusPropertiesTest {
     void shouldAllowTargetAndRead() {
         var props = new LiiklusProperties();
         props.setTarget(URI.create("grpc://host"));
-        props.setRead(new Target(URI.create("grpc://host")));
+        props.setRead(new Target(URI.create("grpc://host"), null));
 
         var errors = new BeanPropertyBindingResult(props, "props");
 
@@ -36,7 +36,7 @@ class LiiklusPropertiesTest {
     @Test
     void shouldAllowOnlyRead() {
         var props = new LiiklusProperties();
-        props.setRead(new Target(URI.create("grpc://host")));
+        props.setRead(new Target(URI.create("grpc://host"), null));
 
         var errors = new BeanPropertyBindingResult(props, "props");
 

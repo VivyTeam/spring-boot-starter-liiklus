@@ -54,6 +54,8 @@ public class LiiklusProperties {
     public static class Target {
         @NotNull
         URI uri;
+
+        String secret;
     }
 
     public static class LiiklusPropertiesValidator implements Validator {

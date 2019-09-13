@@ -15,11 +15,11 @@ import com.github.bsideup.liiklus.protocol.ReceiveRequest;
 import com.github.bsideup.liiklus.protocol.SubscribeReply;
 import com.github.bsideup.liiklus.protocol.SubscribeRequest;
 import com.google.protobuf.Empty;
-import io.grpc.ManagedChannel;
 import io.grpc.netty.NettyChannelBuilder;
 import io.rsocket.RSocket;
 import io.rsocket.RSocketFactory;
 import io.rsocket.transport.netty.client.TcpClientTransport;
+import io.vivy.liiklus.auth.grpc.JWTClientInterceptor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationRunner;
@@ -37,7 +37,7 @@ import reactor.core.publisher.SignalType;
 import reactor.core.scheduler.Schedulers;
 
 import java.net.InetSocketAddress;
-import java.net.URI;
+import java.time.Clock;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
@@ -53,21 +53,24 @@ public class LiiklusAutoConfiguration {
     @Autowired
     LiiklusProperties properties;
 
-    private static LiiklusClient createClient(URI targetURI) {
-        if (targetURI == null) {
+    @Autowired
+    Clock clock;
+
+    private LiiklusClient createClient(LiiklusProperties.Target target) {
+        if (target.getUri() == null) {
             return new ComplainingLiiklusClient();
         }
 
-        switch (targetURI.getScheme()) {
+        switch (target.getUri().getScheme()) {
             case RSOCKET_TRANSPORT:
-                return rsocket(targetURI);
+                return rsocket(target);
             default:
-                return grpc(targetURI);
+                return grpc(target);
         }
     }
 
-    private static LiiklusClient rsocket(URI targetURI) {
-        TcpClientTransport transport = TcpClientTransport.create(new InetSocketAddress(targetURI.getHost(), targetURI.getPort()));
+    private LiiklusClient rsocket(LiiklusProperties.Target target) {
+        TcpClientTransport transport = TcpClientTransport.create(new InetSocketAddress(target.getUri().getHost(), target.getUri().getPort()));
         RSocket rSocket = RSocketFactory.connect()
                 .transport(transport)
                 .start()
@@ -76,22 +79,31 @@ public class LiiklusAutoConfiguration {
         return new RSocketLiiklusClient(rSocket);
     }
 
-    private static LiiklusClient grpc(URI targetURI) {
-        ManagedChannel channel = NettyChannelBuilder.forAddress(targetURI.getHost(), targetURI.getPort())
+    private LiiklusClient grpc(LiiklusProperties.Target target) {
+        var builder = NettyChannelBuilder.forAddress(target.getUri().getHost(), target.getUri().getPort())
                 .directExecutor()
                 .usePlaintext()
                 .keepAliveWithoutCalls(true)
-                .keepAliveTime(150, TimeUnit.SECONDS)
-                .build();
+                .keepAliveTime(150, TimeUnit.SECONDS);
 
-        return new GRPCLiiklusClient(channel);
+        if (target.getSecret() != null) {
+            builder.intercept(new JWTClientInterceptor(clock, target.getSecret()));
+        }
+
+        return new GRPCLiiklusClient(builder.build());
     }
 
+    @Bean
+    @ConditionalOnMissingBean(Clock.class)
+    Clock clock() {
+        return Clock.systemUTC();
+    }
 
     @Bean
     LiiklusClient liiklusClient() {
-        var read = properties.getRead() == null ? properties.getTarget() : properties.getRead().getUri();
-        var write = properties.getWrite() == null ? properties.getTarget() : properties.getWrite().getUri();
+        var defaultTarget = new LiiklusProperties.Target(properties.getTarget(), null);
+        var read = properties.getRead() == null ? defaultTarget : properties.getRead();
+        var write = properties.getWrite() == null ? defaultTarget : properties.getWrite();
 
         var readClient = createClient(read);
         var writeClient = createClient(write);

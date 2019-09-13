@@ -16,6 +16,7 @@ dependencies {
     compileOnly 'org.springframework.boot:spring-boot-starter-actuator'
     compile 'javax.validation:validation-api'
     compile 'com.github.bsideup.liiklus:client'
+    compile 'com.auth0:java-jwt'
 
     testCompile 'com.github.bsideup.liiklus:testing'
     testCompile 'org.springframework.boot:spring-boot-starter-test'
