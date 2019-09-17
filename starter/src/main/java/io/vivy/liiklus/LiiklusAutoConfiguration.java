@@ -63,9 +63,6 @@ public class LiiklusAutoConfiguration {
     @Autowired
     LiiklusProperties properties;
 
-    @Autowired
-    Clock clock;
-
     private LiiklusClient createClient(LiiklusProperties.Target target, Clock clock) {
         if (target.getUri() == null) {
             return new ComplainingLiiklusClient();
