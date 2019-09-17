@@ -11,6 +11,7 @@ import org.testcontainers.lifecycle.Startables;
 import java.time.Duration;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -27,6 +28,7 @@ public class AbstractIntegrationTest {
 
         System.getProperties().putAll(Map.of(
                 "liiklus.write.uri", "grpc://" + liiklus.getContainerIpAddress() + ":" + liiklus.getMappedPort(6565),
+                "liiklus.write.secret", UUID.randomUUID().toString(),
                 "liiklus.read.uri", "rsocket://" + liiklus.getContainerIpAddress() + ":" + liiklus.getMappedPort(8081),
                 "liiklus.topic", "user-event-log",
                 "liiklus.groupVersion", "1",
