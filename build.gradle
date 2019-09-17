@@ -46,6 +46,8 @@ allprojects {
             dependency 'org.awaitility:awaitility:3.1.6'
 
             dependency 'com.auth0:java-jwt:3.8.1'
+
+            dependency 'com.avast.grpc.jwt:grpc-java-jwt:0.2.0'
         }
     }
 }

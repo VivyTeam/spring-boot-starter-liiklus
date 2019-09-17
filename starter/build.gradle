@@ -18,6 +18,8 @@ dependencies {
     compile 'com.github.bsideup.liiklus:client'
     compile 'com.auth0:java-jwt'
 
+    compile 'com.avast.grpc.jwt:grpc-java-jwt'
+
     testCompile 'com.github.bsideup.liiklus:testing'
     testCompile 'org.springframework.boot:spring-boot-starter-test'
     testCompile 'org.springframework.boot:spring-boot-starter-actuator'

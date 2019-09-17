@@ -16,7 +16,7 @@ public class LoggingRecordProcessor implements PartitionAwareProcessor {
     @Override
     public Mono<Void> apply(Integer part, ReceiveReply.Record record) {
         return ((EventLogProcessor<ReceiveReply.Record>) recordEvent -> {
-            log.info("Received record: {}:{}:{}", recordEvent.getPartition(), recordEvent.getOffset(), recordEvent.getValue());
+            log.info("{} [{}:{}] [{}] {}", recordEvent.getTimestamp(), recordEvent.getPartition(), recordEvent.getOffset(), recordEvent.getKey(), record.getValue().toStringUtf8());
             return Mono.empty();
         })
                 .apply(new EventLogProcessor.Event<>() {
