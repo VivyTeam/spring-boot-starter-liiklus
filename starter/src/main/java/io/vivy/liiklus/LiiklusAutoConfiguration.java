@@ -29,6 +29,7 @@ import io.rsocket.RSocketFactory;
 import io.rsocket.transport.netty.client.TcpClientTransport;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
@@ -59,6 +60,8 @@ public class LiiklusAutoConfiguration {
     private static final String RSOCKET_TRANSPORT = "rsocket";
 
     private static final Duration TOKEN_EXPIRE_TIME = Duration.ofMinutes(1);
+
+    private static final String LIIKLUS_CLOCK = "liiklus_clock";
 
     @Autowired
     LiiklusProperties properties;
@@ -111,14 +114,13 @@ public class LiiklusAutoConfiguration {
         return new GRPCLiiklusClient(builder.build());
     }
 
-    @Bean
-    @ConditionalOnMissingBean(Clock.class)
+    @Bean(LIIKLUS_CLOCK)
     Clock clock() {
         return Clock.systemUTC();
     }
 
     @Bean
-    LiiklusClient liiklusClient(Clock clock) {
+    LiiklusClient liiklusClient(@Qualifier(LIIKLUS_CLOCK) Clock clock) {
         var defaultTarget = new LiiklusProperties.Target(properties.getTarget(), null);
         var read = properties.getRead() == null ? defaultTarget : properties.getRead();
         var write = properties.getWrite() == null ? defaultTarget : properties.getWrite();
