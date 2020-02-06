@@ -34,7 +34,7 @@ allprojects {
         }
 
         dependencies {
-            dependencySet(group: 'com.github.bsideup.liiklus', version: '0.9.0') {
+            dependencySet(group: 'com.github.bsideup.liiklus', version: '0.9.1') {
                 entry 'client'
                 entry 'testing'
             }
