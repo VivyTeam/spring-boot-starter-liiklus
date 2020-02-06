@@ -47,6 +47,7 @@ allprojects {
 
             dependency 'com.auth0:java-jwt:3.9.0'
 
+            dependency 'com.avast.grpc.jwt:grpc-java-jwt:0.2.0'
         }
     }
 }
