@@ -1,22 +1,23 @@
-package io.vivy.liiklus;
+package io.vivy.liiklus.publisher;
 
 import com.github.bsideup.liiklus.LiiklusClient;
 import com.github.bsideup.liiklus.protocol.PublishReply;
 import com.github.bsideup.liiklus.protocol.PublishRequest;
 import com.google.protobuf.ByteString;
-import lombok.RequiredArgsConstructor;
-import lombok.experimental.FieldDefaults;
 import reactor.core.publisher.Mono;
 
 import java.nio.ByteBuffer;
 
-@RequiredArgsConstructor
-@FieldDefaults(makeFinal = true)
 public class LiiklusPublisher {
 
-    LiiklusClient liiklusClient;
+    protected LiiklusClient liiklusClient;
 
-    String topic;
+    protected String topic;
+
+    public void init(LiiklusClient liiklusClient, String topic) {
+        this.liiklusClient = liiklusClient;
+        this.topic = topic;
+    }
 
     public Mono<PublishReply> publish(String key, ByteBuffer value) {
         return publish(key, value.array());
@@ -32,6 +33,4 @@ public class LiiklusPublisher {
         return liiklusClient.publish(publishRequest)
                 .checkpoint("publish-" + key);
     }
-
-
 }

@@ -9,8 +9,6 @@ import org.springframework.validation.Validator;
 import org.springframework.validation.annotation.Validated;
 
 import javax.validation.Valid;
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import java.net.URI;
 import java.time.Duration;
@@ -28,25 +26,8 @@ public class LiiklusProperties {
     @Valid
     Target write;
 
-    @NotEmpty
-    String topic;
-
     @NotNull
     Duration ackInterval = Duration.ofSeconds(5);
-
-    @NotEmpty
-    String groupName;
-
-    @Min(1)
-    int groupVersion = 1;
-
-    /**
-     * @deprecated use {@link #getTarget()} directly
-     */
-    @Deprecated
-    public URI getTargetURI() {
-        return getTarget();
-    }
 
     @Data
     @NoArgsConstructor

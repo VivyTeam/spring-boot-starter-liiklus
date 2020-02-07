@@ -1,9 +1,12 @@
-package io.vivy.liiklus;
+package io.vivy.liiklus.single;
 
 import com.github.bsideup.liiklus.protocol.PublishReply;
-import io.vivy.liiklus.support.LoggingRecordProcessor;
+import io.vivy.liiklus.LiiklusAutoConfiguration;
+import io.vivy.liiklus.consumer.LiiklusConsumerLoop;
+import io.vivy.liiklus.publisher.LiiklusPublisher;
 import org.junit.jupiter.api.Test;
 import org.mockito.internal.verification.AtLeast;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.context.annotation.Bean;
@@ -18,34 +21,26 @@ import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.verify;
 
 @SpringBootTest(
-        classes = {ConnectTest.WithRecordProcessor.class},
+        classes = {TestConfiguration.class, LiiklusAutoConfiguration.class},
         webEnvironment = SpringBootTest.WebEnvironment.MOCK,
         properties = {
-                "liiklus.groupName=${random.uuid}-connect",
+                "test.groupName=${random.uuid}-connect",
         }
 )
 public class ConnectTest extends AbstractIntegrationTest {
 
     @SpyBean
-    protected LoggingRecordProcessor loggingRecordProcessor;
+    protected TestConsumer testConsumer;
 
-    @Configuration
-    @Import(TestApplication.class)
-    public static class WithRecordProcessor {
-
-        @Bean
-        public LoggingRecordProcessor loggingRecordProcessor() {
-            return new LoggingRecordProcessor();
-        }
-
-    }
+    @Autowired
+    protected TestPublisher testPublisher;
 
     @Test
     void shouldReceiveMessages() {
         String key = UUID.randomUUID().toString();
-        PublishReply offset = liiklusPublisher.publish(key, key.getBytes()).block(Duration.ofSeconds(5));
+        PublishReply offset = testPublisher.publish(key, key.getBytes()).block(Duration.ofSeconds(5));
 
         waitForLiiklusOffset(offset);
-        verify(loggingRecordProcessor, new AtLeast(1)).apply(anyInt(), any());
+        verify(testConsumer, new AtLeast(1)).consume(anyInt(), any());
     }
 }

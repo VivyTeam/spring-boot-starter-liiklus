@@ -1,5 +1,6 @@
-package io.vivy.liiklus;
+package io.vivy.liiklus.single;
 
+import io.vivy.liiklus.LiiklusProperties;
 import io.vivy.liiklus.LiiklusProperties.Target;
 import org.junit.jupiter.api.Test;
 import org.springframework.validation.BeanPropertyBindingResult;

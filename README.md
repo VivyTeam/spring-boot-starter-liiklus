@@ -31,7 +31,7 @@ liiklus.ackInterval=10ms // default is 5s
 ```
 
 ### To consume the messages
-implement `io.vivy.liiklus.RecordProcessor`
+implement `io.vivy.liiklus.consumer.RecordProcessor`
 
 usually that's the parsing of the raw bytes and delegation to the real processor of the messages
 
@@ -93,7 +93,7 @@ public class LiiklusConfiguration {
 
 ### To produce the messages
 
-Just inject `io.vivy.liiklus.LiiklusPublisher` and use `Mono<PublishReply> publish(String key, byte[] value)` method
+Just inject `io.vivy.liiklus.publisher.LiiklusPublisher` and use `Mono<PublishReply> publish(String key, byte[] value)` method
 
 ### Read/Write separation note
 

@@ -1,8 +1,9 @@
-package io.vivy.liiklus;
+package io.vivy.liiklus.single;
 
 import io.restassured.builder.RequestSpecBuilder;
 import io.restassured.http.ContentType;
 import io.restassured.specification.RequestSpecification;
+import io.vivy.liiklus.LiiklusAutoConfiguration;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -12,13 +13,14 @@ import static io.restassured.RestAssured.given;
 import static org.hamcrest.core.Is.is;
 
 @SpringBootTest(
+
+        classes = {TestConfiguration.class, TestApplication.class},
         webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
         properties = {
-                "liiklus.groupName=${random.uuid}-health",
+                "test.groupName=${random.uuid}-health",
         }
 )
 class HealthTest extends AbstractIntegrationTest {
-
 
     @LocalServerPort
     private int port;
