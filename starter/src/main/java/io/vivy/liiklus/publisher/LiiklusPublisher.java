@@ -4,15 +4,19 @@ import com.github.bsideup.liiklus.LiiklusClient;
 import com.github.bsideup.liiklus.protocol.PublishReply;
 import com.github.bsideup.liiklus.protocol.PublishRequest;
 import com.google.protobuf.ByteString;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.experimental.FieldDefaults;
 import reactor.core.publisher.Mono;
 
 import java.nio.ByteBuffer;
 
+@Getter
+@FieldDefaults(makeFinal = false, level = AccessLevel.PRIVATE)
 public class LiiklusPublisher {
 
-    protected LiiklusClient liiklusClient;
-
-    protected String topic;
+    String topic;
+    LiiklusClient liiklusClient;
 
     public void init(LiiklusClient liiklusClient, String topic) {
         this.liiklusClient = liiklusClient;

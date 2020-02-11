@@ -92,9 +92,8 @@ public class LiiklusConsumerLoop implements Closeable {
 
     @Override
     public void close() {
-        if (Objects.isNull(disposable)) {
-            return;
+        if (disposable != null) {
+            disposable.dispose();
         }
-        disposable.dispose();
     }
 }

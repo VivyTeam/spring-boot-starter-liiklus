@@ -3,7 +3,6 @@ package io.vivy.liiklus.single;
 import io.restassured.builder.RequestSpecBuilder;
 import io.restassured.http.ContentType;
 import io.restassured.specification.RequestSpecification;
-import io.vivy.liiklus.LiiklusAutoConfiguration;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -20,7 +19,7 @@ import static org.hamcrest.core.Is.is;
                 "test.groupName=${random.uuid}-health",
         }
 )
-class HealthTest extends AbstractIntegrationTest {
+class HealthTest extends SingleTopicTest {
 
     @LocalServerPort
     private int port;

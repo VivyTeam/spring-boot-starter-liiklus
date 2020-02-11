@@ -76,7 +76,8 @@ public class LiiklusAutoConfiguration {
                     var consumerLoop = liiklusComponentFactory.createConsumer(
                             consumerProperties.getTopic(),
                             consumerProperties.getGroupName(),
-                            consumerProperties.getGroupVersion(), consumer);
+                            consumerProperties.getGroupVersion(),
+                            consumer);
                     consumerLoop.run();
                     consumer.init(consumerLoop);
                 }

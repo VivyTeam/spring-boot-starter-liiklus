@@ -2,17 +2,12 @@ package io.vivy.liiklus.single;
 
 import com.github.bsideup.liiklus.protocol.PublishReply;
 import io.vivy.liiklus.LiiklusAutoConfiguration;
-import io.vivy.liiklus.consumer.LiiklusConsumerLoop;
-import io.vivy.liiklus.publisher.LiiklusPublisher;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.internal.verification.AtLeast;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.SpyBean;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Import;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.time.Duration;
@@ -27,10 +22,10 @@ import static org.mockito.Mockito.verify;
         classes = {TestConfiguration.class, LiiklusAutoConfiguration.class},
         webEnvironment = SpringBootTest.WebEnvironment.MOCK,
         properties = {
-                "test.groupName=p${random.uuid}-artitionaware",
+                "test.groupName=${random.uuid}-partitionaware",
         }
 )
-public class PartitionAwareConnectTest extends AbstractIntegrationTest {
+public class PartitionAwareConnectTest extends SingleTopicTest {
 
     @SpyBean
     protected TestConsumer testConsumer;

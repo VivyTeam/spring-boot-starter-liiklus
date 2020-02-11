@@ -2,16 +2,11 @@ package io.vivy.liiklus.single;
 
 import com.github.bsideup.liiklus.protocol.PublishReply;
 import io.vivy.liiklus.LiiklusAutoConfiguration;
-import io.vivy.liiklus.consumer.LiiklusConsumerLoop;
-import io.vivy.liiklus.publisher.LiiklusPublisher;
 import org.junit.jupiter.api.Test;
 import org.mockito.internal.verification.AtLeast;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.SpyBean;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Import;
 
 import java.time.Duration;
 import java.util.UUID;
@@ -27,7 +22,7 @@ import static org.mockito.Mockito.verify;
                 "test.groupName=${random.uuid}-connect",
         }
 )
-public class ConnectTest extends AbstractIntegrationTest {
+public class ConnectTest extends SingleTopicTest {
 
     @SpyBean
     protected TestConsumer testConsumer;
