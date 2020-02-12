@@ -1,4 +1,4 @@
-package io.vivy.liiklus.publisher;
+package io.vivy.liiklus.producer;
 
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -9,15 +9,15 @@ import org.springframework.core.env.Environment;
 @RequiredArgsConstructor
 @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
 @Getter
-public class LiiklusPublisherProperties {
+public class LiiklusProducerProperties {
 
     String topic;
 
-    public static LiiklusPublisherProperties create(Environment environment, String prefix) {
+    public static LiiklusProducerProperties create(Environment environment, String prefix) {
         var topic = environment.getRequiredProperty(prefix + ".topic");
         if (topic.isBlank()) {
             throw new IllegalStateException(prefix + ".topic can not be blank");
         }
-        return new LiiklusPublisherProperties(topic);
+        return new LiiklusProducerProperties(topic);
     }
 }

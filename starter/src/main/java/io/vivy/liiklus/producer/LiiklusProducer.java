@@ -1,4 +1,4 @@
-package io.vivy.liiklus.publisher;
+package io.vivy.liiklus.producer;
 
 import com.github.bsideup.liiklus.LiiklusClient;
 import com.github.bsideup.liiklus.protocol.PublishReply;
@@ -13,7 +13,7 @@ import java.nio.ByteBuffer;
 
 @Getter
 @FieldDefaults(makeFinal = false, level = AccessLevel.PRIVATE)
-public class LiiklusPublisher {
+public class LiiklusProducer {
 
     String topic;
     LiiklusClient liiklusClient;

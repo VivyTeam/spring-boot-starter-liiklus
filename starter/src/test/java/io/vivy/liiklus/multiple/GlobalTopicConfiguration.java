@@ -3,7 +3,7 @@ package io.vivy.liiklus.multiple;
 import com.github.bsideup.liiklus.protocol.ReceiveReply;
 import io.vivy.liiklus.common.Liiklus;
 import io.vivy.liiklus.consumer.LiiklusConsumer;
-import io.vivy.liiklus.publisher.LiiklusPublisher;
+import io.vivy.liiklus.producer.LiiklusProducer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import reactor.core.publisher.Mono;
@@ -17,12 +17,12 @@ public class GlobalTopicConfiguration {
     }
 
     @Bean
-    GlobalPublisher globalPublisher() {
-        return new GlobalPublisher();
+    GlobalProducer globalPublisher() {
+        return new GlobalProducer();
     }
 
     @Liiklus(prefix = "global")
-    public class GlobalPublisher extends LiiklusPublisher {
+    public class GlobalProducer extends LiiklusProducer {
     }
 
     @Liiklus(prefix = "global")

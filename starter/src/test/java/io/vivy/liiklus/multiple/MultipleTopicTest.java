@@ -55,10 +55,10 @@ public class MultipleTopicTest {
     protected GlobalTopicConfiguration.GlobalConsumer globalConsumer;
 
     @Autowired
-    protected UserTopicConfiguration.UserPublisher userPublisher;
+    protected UserTopicConfiguration.UserProducer userPublisher;
 
     @Autowired
-    protected GlobalTopicConfiguration.GlobalPublisher globalPublisher;
+    protected GlobalTopicConfiguration.GlobalProducer globalPublisher;
 
     @Test
     void shouldReceiveMessages() {

@@ -9,6 +9,8 @@ import org.springframework.validation.Validator;
 import org.springframework.validation.annotation.Validated;
 
 import javax.validation.Valid;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import java.net.URI;
 import java.time.Duration;
@@ -28,6 +30,16 @@ public class LiiklusProperties {
 
     @NotNull
     Duration ackInterval = Duration.ofSeconds(5);
+
+    @Deprecated
+    String topic;
+
+    @Deprecated
+    String groupName;
+
+    @Min(1)
+    @Deprecated
+    int groupVersion = 1;
 
     @Data
     @NoArgsConstructor
@@ -51,6 +63,12 @@ public class LiiklusProperties {
 
             if (properties.getTarget() == null && properties.getRead() == null && properties.getWrite() == null) {
                 errors.reject("target", "at least one of the target, read.uri or write.uri should be non-empty URI");
+            }
+            if (properties.getTopic() != null && properties.getTopic().isBlank()) {
+                errors.reject("topic", "topic can't be blank");
+            }
+            if (properties.getGroupName() != null && properties.getGroupName().isBlank()) {
+                errors.reject("groupName", "groupName can't be blank");
             }
         }
     }

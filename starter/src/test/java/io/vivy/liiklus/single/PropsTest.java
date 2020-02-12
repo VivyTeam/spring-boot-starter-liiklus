@@ -3,12 +3,10 @@ package io.vivy.liiklus.single;
 import com.github.bsideup.liiklus.container.LiiklusContainer;
 import com.github.bsideup.liiklus.protocol.PublishReply;
 import io.vivy.liiklus.LiiklusAutoConfiguration;
-import io.vivy.liiklus.publisher.LiiklusPublisher;
+import io.vivy.liiklus.LiiklusPublisher;
 import io.vivy.liiklus.LiiklusReactiveHealthIndicatorAutoConfiguration;
 import org.junit.jupiter.api.Test;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.mock.env.MockEnvironment;
 
 import java.time.Duration;
@@ -31,20 +29,20 @@ class PropsTest {
     @Test
     void shouldConnectToLiiklusWithTarget() {
         var ctx = new AnnotationConfigApplicationContext();
-        ctx.register(TestConfiguration.class, LiiklusAutoConfiguration.class, LiiklusReactiveHealthIndicatorAutoConfiguration.class);
+        ctx.register(LiiklusAutoConfiguration.class, LiiklusReactiveHealthIndicatorAutoConfiguration.class);
         ctx.setEnvironment(new MockEnvironment()
                 .withProperty("liiklus.target", "rsocket://" + liiklus.getContainerIpAddress() + ":" + liiklus.getMappedPort(8081))
                 .withProperty("liiklus.ackInterval", "10ms")
-                .withProperty("test.topic", "user-event-log")
-                .withProperty("test.groupVersion", "1")
-                .withProperty("test.groupName", "consumer-" + UUID.randomUUID())
+                .withProperty("liiklus.topic", "user-event-log")
+                .withProperty("liiklus.groupVersion", "1")
+                .withProperty("liiklus.groupName", "consumer-" + UUID.randomUUID())
         );
         ctx.refresh();
 
-        var testPublisher = ctx.getBean(TestPublisher.class);
+        var liiklusPublisher = ctx.getBean(LiiklusPublisher.class);
 
         String key = UUID.randomUUID().toString();
-        PublishReply offset = testPublisher.publish(key, key.getBytes()).block(Duration.ofSeconds(5));
+        PublishReply offset = liiklusPublisher.publish(key, key.getBytes()).block(Duration.ofSeconds(5));
 
         assertThat(offset.getTopic()).isNotBlank();
     }
@@ -52,39 +50,39 @@ class PropsTest {
     @Test
     void shouldFailToWriteOnEmptyWrite() {
         var ctx = new AnnotationConfigApplicationContext();
-        ctx.register(TestConfiguration.class, LiiklusAutoConfiguration.class, LiiklusReactiveHealthIndicatorAutoConfiguration.class);
+        ctx.register(LiiklusAutoConfiguration.class, LiiklusReactiveHealthIndicatorAutoConfiguration.class);
         ctx.setEnvironment(new MockEnvironment()
                 .withProperty("liiklus.read.uri", "rsocket://" + liiklus.getContainerIpAddress() + ":" + liiklus.getMappedPort(8081))
                 .withProperty("liiklus.ackInterval", "10ms")
-                .withProperty("test.topic", "user-event-log")
-                .withProperty("test.groupVersion", "1")
-                .withProperty("test.groupName", "consumer-" + UUID.randomUUID())
+                .withProperty("liiklus.topic", "user-event-log")
+                .withProperty("liiklus.groupVersion", "1")
+                .withProperty("liiklus.groupName", "consumer-" + UUID.randomUUID())
         );
         ctx.refresh();
 
-        var testPublisher = ctx.getBean(TestPublisher.class);
+        var liiklusPublisher = ctx.getBean(LiiklusPublisher.class);
 
         String key = UUID.randomUUID().toString();
-        assertThatThrownBy(() -> testPublisher.publish(key, key.getBytes()).block(Duration.ofSeconds(5)))
+        assertThatThrownBy(() -> liiklusPublisher.publish(key, key.getBytes()).block(Duration.ofSeconds(5)))
                 .isInstanceOf(IllegalCallerException.class);
     }
 
     @Test
     void shouldWorkOnOnlyWrite() {
         var ctx = new AnnotationConfigApplicationContext();
-        ctx.register(TestConfiguration.class, LiiklusAutoConfiguration.class, LiiklusReactiveHealthIndicatorAutoConfiguration.class);
+        ctx.register(LiiklusAutoConfiguration.class, LiiklusReactiveHealthIndicatorAutoConfiguration.class);
         ctx.setEnvironment(new MockEnvironment()
                 .withProperty("liiklus.write.uri", "rsocket://" + liiklus.getContainerIpAddress() + ":" + liiklus.getMappedPort(8081))
                 .withProperty("liiklus.ackInterval", "10ms")
-                .withProperty("test.topic", "user-event-log")
-                .withProperty("test.groupVersion", "1")
-                .withProperty("test.groupName", "consumer-" + UUID.randomUUID())
+                .withProperty("liiklus.topic", "user-event-log")
+                .withProperty("liiklus.groupVersion", "1")
+                .withProperty("liiklus.groupName", "consumer-" + UUID.randomUUID())
         );
         ctx.refresh();
 
-        var testPublisher = ctx.getBean(TestPublisher.class);
+        var liiklusPublisher = ctx.getBean(LiiklusPublisher.class);
         String key = UUID.randomUUID().toString();
-        PublishReply offset = testPublisher.publish(key, key.getBytes()).block(Duration.ofSeconds(5));
+        PublishReply offset = liiklusPublisher.publish(key, key.getBytes()).block(Duration.ofSeconds(5));
 
         assertThat(offset.getTopic()).isNotBlank();
     }

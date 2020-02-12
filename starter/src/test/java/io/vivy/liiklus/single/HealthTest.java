@@ -12,11 +12,9 @@ import static io.restassured.RestAssured.given;
 import static org.hamcrest.core.Is.is;
 
 @SpringBootTest(
-
-        classes = {TestConfiguration.class, TestApplication.class},
         webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
         properties = {
-                "test.groupName=${random.uuid}-health",
+                "liiklus.groupName=${random.uuid}-health",
         }
 )
 class HealthTest extends SingleTopicTest {

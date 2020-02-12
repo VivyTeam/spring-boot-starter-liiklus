@@ -4,6 +4,8 @@ import com.github.bsideup.liiklus.LiiklusClient;
 import com.github.bsideup.liiklus.container.LiiklusContainer;
 import com.github.bsideup.liiklus.protocol.GetOffsetsRequest;
 import com.github.bsideup.liiklus.protocol.PublishReply;
+import io.vivy.liiklus.LiiklusProperties;
+import io.vivy.liiklus.LiiklusPublisher;
 import org.assertj.core.api.Condition;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.testcontainers.lifecycle.Startables;
@@ -30,24 +32,28 @@ public class SingleTopicTest {
                 "liiklus.write.uri", "grpc://" + liiklus.getContainerIpAddress() + ":" + liiklus.getMappedPort(6565),
                 "liiklus.write.secret", UUID.randomUUID().toString(),
                 "liiklus.read.uri", "rsocket://" + liiklus.getContainerIpAddress() + ":" + liiklus.getMappedPort(8081),
-                "liiklus.ackInterval", "10ms",
-                "test.topic","user-event-log",
-                "test.groupVersion", "1"
+                "liiklus.topic", "user-event-log",
+                "liiklus.groupVersion", "1",
+                "liiklus.ackInterval", "10ms"
                 ));
     }
+
+    @Autowired
+    protected LiiklusPublisher liiklusPublisher;
 
     @Autowired
     protected LiiklusClient liiklusClient;
 
     @Autowired
-    protected TestConsumer testConsumer;
+    protected LiiklusProperties liiklusProperties;
+
 
     protected void waitForLiiklusOffset(PublishReply latestOffset) {
         await().atMost(5, TimeUnit.SECONDS).untilAsserted(() -> {
             GetOffsetsRequest getOffsetsRequest = GetOffsetsRequest.newBuilder()
-                    .setTopic(testConsumer.getConsumerLoop().getTopic())
-                    .setGroup(testConsumer.getConsumerLoop().getGroupName())
-                    .setGroupVersion(testConsumer.getConsumerLoop().getGroupVersion())
+                    .setTopic(liiklusProperties.getTopic())
+                    .setGroup(liiklusProperties.getGroupName())
+                    .setGroupVersion(liiklusProperties.getGroupVersion())
                     .build();
             Condition<Long> offsetCondition = new Condition<>(
                     it -> it >= latestOffset.getOffset(),

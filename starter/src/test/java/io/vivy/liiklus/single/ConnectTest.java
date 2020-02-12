@@ -1,41 +1,51 @@
 package io.vivy.liiklus.single;
 
 import com.github.bsideup.liiklus.protocol.PublishReply;
-import io.vivy.liiklus.LiiklusAutoConfiguration;
+import io.vivy.liiklus.support.LoggingRecordProcessor;
 import org.junit.jupiter.api.Test;
 import org.mockito.internal.verification.AtLeast;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.SpyBean;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 
 import java.time.Duration;
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.verify;
 
 @SpringBootTest(
-        classes = {TestConfiguration.class, LiiklusAutoConfiguration.class},
+        classes = {ConnectTest.WithRecordProcessor.class},
         webEnvironment = SpringBootTest.WebEnvironment.MOCK,
         properties = {
-                "test.groupName=${random.uuid}-connect",
+                "liiklus.groupName=${random.uuid}-connect",
+
         }
 )
 public class ConnectTest extends SingleTopicTest {
 
     @SpyBean
-    protected TestConsumer testConsumer;
+    protected LoggingRecordProcessor loggingRecordProcessor;
 
-    @Autowired
-    protected TestPublisher testPublisher;
+    @Configuration
+    @Import(TestApplication.class)
+    public static class WithRecordProcessor {
+
+        @Bean
+        public LoggingRecordProcessor loggingRecordProcessor() {
+            return new LoggingRecordProcessor();
+        }
+
+    }
 
     @Test
     void shouldReceiveMessages() {
         String key = UUID.randomUUID().toString();
-        PublishReply offset = testPublisher.publish(key, key.getBytes()).block(Duration.ofSeconds(5));
+        PublishReply offset = liiklusPublisher.publish(key, key.getBytes()).block(Duration.ofSeconds(5));
 
         waitForLiiklusOffset(offset);
-        verify(testConsumer, new AtLeast(1)).consume(anyInt(), any());
+        verify(loggingRecordProcessor, new AtLeast(1)).apply(any(), any());
     }
 }

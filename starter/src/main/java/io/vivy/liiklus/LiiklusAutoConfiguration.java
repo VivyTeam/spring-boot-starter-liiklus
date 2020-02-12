@@ -1,22 +1,26 @@
 package io.vivy.liiklus;
 
 import com.github.bsideup.liiklus.LiiklusClient;
+import com.github.bsideup.liiklus.protocol.ReceiveReply;
 import io.vivy.liiklus.common.LiiklusUtils;
 import io.vivy.liiklus.consumer.LiiklusConsumer;
 import io.vivy.liiklus.consumer.LiiklusConsumerLoop;
 import io.vivy.liiklus.consumer.LiiklusConsumerProperties;
-import io.vivy.liiklus.publisher.LiiklusPublisher;
-import io.vivy.liiklus.publisher.LiiklusPublisherProperties;
+import io.vivy.liiklus.producer.LiiklusProducer;
+import io.vivy.liiklus.producer.LiiklusProducerProperties;
 import io.vivy.liiklus.support.LiiklusClientFactory;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
 import org.springframework.validation.Validator;
+import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
 import java.time.Clock;
@@ -46,6 +50,51 @@ public class LiiklusAutoConfiguration {
     }
 
     @Bean
+    @ConditionalOnProperty(prefix = "liiklus", name = "topic")
+    LiiklusPublisher liiklusPublisher(LiiklusClient liiklusClient) {
+        return new LiiklusPublisher(properties.getTopic(), liiklusClient);
+    }
+
+    @Bean(destroyMethod = "close")
+    @ConditionalOnProperty(prefix = "liiklus", name = {"topic", "groupName"})
+    @ConditionalOnBean(PartitionAwareProcessor.class)
+    LiiklusConsumerLoop liiklusConsumerLoop(LiiklusComponentFactory liiklusComponentFactory, PartitionAwareProcessor partitionAwareProcessor) {
+        var consumer = new LiiklusConsumer() {
+            @Override
+            public Mono<Void> consume(int partition, ReceiveReply.Record record) {
+                return partitionAwareProcessor.apply(partition, record);
+            }
+        };
+        return createConsumerLoop(liiklusComponentFactory, consumer);
+    }
+
+    @Bean(destroyMethod = "close")
+    @ConditionalOnProperty(prefix = "liiklus", name = {"topic", "groupName"})
+    @ConditionalOnBean(RecordProcessor.class)
+    @ConditionalOnMissingBean(PartitionAwareProcessor.class)
+    LiiklusConsumerLoop liiklusConsumerLoop(LiiklusComponentFactory liiklusComponentFactory, RecordProcessor recordProcessor) {
+        var consumer = new LiiklusConsumer() {
+            @Override
+            public Mono<Void> consume(int partition, ReceiveReply.Record record) {
+                return recordProcessor.apply(record);
+            }
+        };
+        return createConsumerLoop(liiklusComponentFactory, consumer);
+    }
+
+    @Deprecated
+    private LiiklusConsumerLoop createConsumerLoop(LiiklusComponentFactory liiklusComponentFactory, LiiklusConsumer liiklusConsumer) {
+        LiiklusConsumerLoop consumerLoop = liiklusComponentFactory.createConsumer(
+                properties.getTopic(),
+                properties.getGroupName(),
+                properties.getGroupVersion(),
+                liiklusConsumer
+        );
+        consumerLoop.run();
+        return consumerLoop;
+    }
+
+    @Bean
     public LiiklusComponentFactory liiklusComponentFactory(LiiklusClient liiklusClient) {
         var ackScheduler = Schedulers.newSingle("ack");
         var readScheduler = Schedulers.newParallel("liiklus");
@@ -58,14 +107,14 @@ public class LiiklusAutoConfiguration {
     }
 
     @Bean
-    public List<LiiklusPublisher> liiklusPublisher(LiiklusClient liiklusClient, List<LiiklusPublisher> liiklusPublishers) {
-        liiklusPublishers.forEach(publisher -> {
+    public List<LiiklusProducer> liiklusProducers(LiiklusClient liiklusClient, List<LiiklusProducer> liiklusProducers) {
+        liiklusProducers.forEach(publisher -> {
                     var prefix = LiiklusUtils.getLiiklusPrefix(publisher);
-                    var publisherProperties = LiiklusPublisherProperties.create(environment, prefix);
+                    var publisherProperties = LiiklusProducerProperties.create(environment, prefix);
                     publisher.init(liiklusClient, publisherProperties.getTopic());
                 }
         );
-        return liiklusPublishers;
+        return liiklusProducers;
     }
 
     @Bean
