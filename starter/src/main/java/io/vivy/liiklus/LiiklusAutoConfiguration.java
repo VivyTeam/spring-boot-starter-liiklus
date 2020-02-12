@@ -3,6 +3,7 @@ package io.vivy.liiklus;
 import com.github.bsideup.liiklus.LiiklusClient;
 import io.vivy.liiklus.common.LiiklusUtils;
 import io.vivy.liiklus.consumer.LiiklusConsumer;
+import io.vivy.liiklus.consumer.LiiklusConsumerLoop;
 import io.vivy.liiklus.consumer.LiiklusConsumerProperties;
 import io.vivy.liiklus.publisher.LiiklusPublisher;
 import io.vivy.liiklus.publisher.LiiklusPublisherProperties;
@@ -73,11 +74,12 @@ public class LiiklusAutoConfiguration {
                     var prefix = LiiklusUtils.getLiiklusPrefix(consumer);
 
                     var consumerProperties = LiiklusConsumerProperties.create(environment, prefix);
-                    var consumerLoop = liiklusComponentFactory.createConsumer(
+                    LiiklusConsumerLoop consumerLoop = liiklusComponentFactory.createConsumer(
                             consumerProperties.getTopic(),
                             consumerProperties.getGroupName(),
                             consumerProperties.getGroupVersion(),
-                            consumer);
+                            consumer
+                    );
                     consumerLoop.run();
                     consumer.init(consumerLoop);
                 }

@@ -17,8 +17,17 @@ public class LiiklusConsumerProperties {
 
     public static LiiklusConsumerProperties create(Environment environment, String prefix) {
         var topic = environment.getRequiredProperty(prefix + ".topic");
+        if (topic.isBlank()) {
+            throw new IllegalStateException(prefix + ".topic can not be blank");
+        }
         var groupName = environment.getRequiredProperty(prefix + ".groupName");
-        var groupVersion = environment.getRequiredProperty(prefix + ".groupVersion");
-        return new LiiklusConsumerProperties(topic, groupName, Integer.parseInt(groupVersion));
+        if (groupName.isBlank()) {
+            throw new IllegalStateException(prefix + ".groupName can not be blank");
+        }
+        var groupVersion = Integer.parseInt(environment.getRequiredProperty(prefix + ".groupVersion"));
+        if (groupVersion < 1) {
+            throw new IllegalStateException(prefix + ".groupVersion can not be less than 1");
+        }
+        return new LiiklusConsumerProperties(topic, groupName, groupVersion);
     }
 }

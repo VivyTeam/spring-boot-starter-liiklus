@@ -15,6 +15,9 @@ public class LiiklusPublisherProperties {
 
     public static LiiklusPublisherProperties create(Environment environment, String prefix) {
         var topic = environment.getRequiredProperty(prefix + ".topic");
+        if (topic.isBlank()) {
+            throw new IllegalStateException(prefix + ".topic can not be blank");
+        }
         return new LiiklusPublisherProperties(topic);
     }
 }
