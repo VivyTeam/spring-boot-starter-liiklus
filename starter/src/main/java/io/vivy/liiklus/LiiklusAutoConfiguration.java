@@ -18,10 +18,8 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.env.Environment;
 import org.springframework.validation.Validator;
 import reactor.core.publisher.Mono;
-import reactor.core.scheduler.Schedulers;
 
 import java.time.Clock;
 import java.util.List;
@@ -34,9 +32,6 @@ public class LiiklusAutoConfiguration {
 
     @Autowired
     LiiklusProperties properties;
-
-    @Autowired
-    Environment environment;
 
     @Bean
     @ConditionalOnMissingBean(Clock.class)
