@@ -10,10 +10,10 @@ import org.springframework.validation.annotation.Validated;
 
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
-import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import java.net.URI;
 import java.time.Duration;
+import java.util.Map;
 
 @Validated
 @ConfigurationProperties("liiklus")
@@ -40,6 +40,8 @@ public class LiiklusProperties {
     @Min(1)
     @Deprecated
     int groupVersion = 1;
+
+    Map<String, String> topics;
 
     @Data
     @NoArgsConstructor

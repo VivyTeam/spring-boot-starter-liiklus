@@ -11,6 +11,6 @@ public class LiiklusUtils {
         if (isNull(annotation)) {
             throw new IllegalArgumentException("The classes must be annotated with @Liiklus");
         }
-        return annotation.prefix();
+        return annotation.value();
     }
 }

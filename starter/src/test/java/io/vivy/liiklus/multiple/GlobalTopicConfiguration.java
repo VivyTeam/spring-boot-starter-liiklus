@@ -21,11 +21,11 @@ public class GlobalTopicConfiguration {
         return new GlobalProducer();
     }
 
-    @Liiklus(prefix = "global")
+    @Liiklus("global")
     public class GlobalProducer extends LiiklusProducer {
     }
 
-    @Liiklus(prefix = "global")
+    @Liiklus("global")
     public class GlobalConsumer extends LiiklusConsumer {
 
         @Override

@@ -110,7 +110,7 @@ public class LiiklusAutoConfiguration {
     public List<LiiklusProducer> liiklusProducers(LiiklusClient liiklusClient, List<LiiklusProducer> liiklusProducers) {
         liiklusProducers.forEach(publisher -> {
                     var prefix = LiiklusUtils.getLiiklusPrefix(publisher);
-                    var publisherProperties = LiiklusProducerProperties.create(environment, prefix);
+                    var publisherProperties = LiiklusProducerProperties.create(properties, prefix);
                     publisher.init(liiklusClient, publisherProperties.getTopic());
                 }
         );
@@ -122,7 +122,7 @@ public class LiiklusAutoConfiguration {
         liiklusConsumers.forEach(consumer -> {
                     var prefix = LiiklusUtils.getLiiklusPrefix(consumer);
 
-                    var consumerProperties = LiiklusConsumerProperties.create(environment, prefix);
+                    var consumerProperties = LiiklusConsumerProperties.create(properties, prefix);
                     LiiklusConsumerLoop consumerLoop = liiklusComponentFactory.createConsumer(
                             consumerProperties.getTopic(),
                             consumerProperties.getGroupName(),

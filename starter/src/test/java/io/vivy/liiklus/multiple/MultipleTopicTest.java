@@ -24,12 +24,12 @@ import static org.mockito.Mockito.verify;
         classes = {LiiklusAutoConfiguration.class, UserTopicConfiguration.class, GlobalTopicConfiguration.class},
         webEnvironment = SpringBootTest.WebEnvironment.MOCK,
         properties = {
-                "user.topic=user-event-log",
-                "user.groupName=service1",
-                "user.groupVersion=1",
-                "global.topic=global-event-log",
-                "global.groupName=service2",
-                "global.groupVersion=3",
+                "liiklus.topics.user.topic=user-event-log",
+                "liiklus.topics.user.groupName=service1",
+                "liiklus.topics.user.groupVersion=1",
+                "liiklus.topics.global.topic=global-event-log",
+                "liiklus.topics.global.groupName=service2",
+                "liiklus.topics.global.groupVersion=3",
         }
 )
 public class MultipleTopicTest {

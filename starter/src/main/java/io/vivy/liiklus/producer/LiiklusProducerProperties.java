@@ -1,10 +1,12 @@
 package io.vivy.liiklus.producer;
 
+import io.vivy.liiklus.LiiklusProperties;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import org.springframework.core.env.Environment;
+
+import static java.util.Objects.isNull;
 
 @RequiredArgsConstructor
 @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
@@ -13,10 +15,10 @@ public class LiiklusProducerProperties {
 
     String topic;
 
-    public static LiiklusProducerProperties create(Environment environment, String prefix) {
-        var topic = environment.getRequiredProperty(prefix + ".topic");
-        if (topic.isBlank()) {
-            throw new IllegalStateException(prefix + ".topic can not be blank");
+    public static LiiklusProducerProperties create(LiiklusProperties properties, String name) {
+        var topic = properties.getTopics().get(name + ".topic");
+        if (isNull(topic) ||  topic.isBlank()) {
+            throw new IllegalStateException(name + ".topic can not be null or blank");
         }
         return new LiiklusProducerProperties(topic);
     }

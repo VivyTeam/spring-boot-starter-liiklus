@@ -21,11 +21,11 @@ public class UserTopicConfiguration {
         return new UserProducer();
     }
 
-    @Liiklus(prefix = "user")
+    @Liiklus("user")
     public class UserProducer extends LiiklusProducer {
     }
 
-    @Liiklus(prefix = "user")
+    @Liiklus("user")
     public class UserConsumer extends LiiklusConsumer {
 
         @Override
