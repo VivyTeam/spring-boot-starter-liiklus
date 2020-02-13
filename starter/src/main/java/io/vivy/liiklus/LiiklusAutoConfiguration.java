@@ -96,9 +96,7 @@ public class LiiklusAutoConfiguration {
 
     @Bean
     public LiiklusComponentFactory liiklusComponentFactory(LiiklusClient liiklusClient) {
-        var ackScheduler = Schedulers.newSingle("ack");
-        var readScheduler = Schedulers.newParallel("liiklus");
-        return new LiiklusComponentFactory(liiklusClient, properties.getAckInterval(), ackScheduler, readScheduler);
+        return new LiiklusComponentFactory(liiklusClient, properties.getAckInterval());
     }
 
     @Bean

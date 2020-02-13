@@ -24,16 +24,15 @@ public class LiiklusComponentFactory {
 
     Duration ackInterval;
 
-    Scheduler ackScheduler;
-
-    Scheduler readScheduler;
-
     public LiiklusConsumerLoop createConsumer(String topic, String groupName, int groupVersion, LiiklusConsumer liiklusConsumer) {
+        var ackScheduler = Schedulers.newSingle(String.format("ack_%s", topic));
+        var readScheduler = Schedulers.newParallel(String.format("liiklus_%s", topic));
         return new LiiklusConsumerLoop(
                 topic,
                 groupName,
                 groupVersion,
                 readScheduler,
+                ackScheduler,
                 liiklusClient,
                 (partition, records) -> {
                     var ackInProgress = ReplayProcessor.cacheLastOrDefault(false);

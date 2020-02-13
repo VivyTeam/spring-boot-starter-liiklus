@@ -37,7 +37,9 @@ public class LiiklusConsumerLoop implements Closeable {
     String groupName;
     int groupVersion;
 
-    Scheduler scheduler;
+    Scheduler readScheduler;
+    Scheduler ackScheduler;
+
     LiiklusClient client;
     BiFunction<Integer, Flux<ReceiveReply.Record>, Publisher<Long>> liiklusRecordProcessor;
 
@@ -72,7 +74,7 @@ public class LiiklusConsumerLoop implements Closeable {
                 }, Integer.MAX_VALUE, Integer.MAX_VALUE)
                 .log("mainLoop", Level.WARNING, SignalType.ON_ERROR)
                 .retryWhen(it -> it.delayElements(Duration.ofSeconds(1)))
-                .subscribeOn(scheduler)
+                .subscribeOn(readScheduler)
                 .subscribe();
     }
 
@@ -94,6 +96,12 @@ public class LiiklusConsumerLoop implements Closeable {
     public void close() {
         if (disposable != null) {
             disposable.dispose();
+        }
+        if (readScheduler != null) {
+            readScheduler.dispose();
+        }
+        if (ackScheduler != null) {
+            ackScheduler.dispose();
         }
     }
 }
