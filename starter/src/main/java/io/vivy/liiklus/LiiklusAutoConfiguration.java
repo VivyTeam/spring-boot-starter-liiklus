@@ -50,7 +50,6 @@ public class LiiklusAutoConfiguration {
         return new LiiklusPublisher(properties.getTopic(), liiklusClient);
     }
 
-    @Bean(destroyMethod = "close")
     @ConditionalOnProperty(prefix = "liiklus", name = {"topic", "groupName"})
     @ConditionalOnBean(PartitionAwareProcessor.class)
     LiiklusConsumerLoop liiklusConsumerLoop(LiiklusComponentFactory liiklusComponentFactory, PartitionAwareProcessor partitionAwareProcessor) {
@@ -63,7 +62,6 @@ public class LiiklusAutoConfiguration {
         return createConsumerLoop(liiklusComponentFactory, consumer);
     }
 
-    @Bean(destroyMethod = "close")
     @ConditionalOnProperty(prefix = "liiklus", name = {"topic", "groupName"})
     @ConditionalOnBean(RecordProcessor.class)
     @ConditionalOnMissingBean(PartitionAwareProcessor.class)

@@ -21,7 +21,6 @@ import reactor.core.publisher.Mono;
 import reactor.core.publisher.SignalType;
 import reactor.core.scheduler.Scheduler;
 
-import java.io.Closeable;
 import java.time.Duration;
 import java.util.Objects;
 import java.util.function.BiFunction;
@@ -31,7 +30,7 @@ import java.util.logging.Level;
 @RequiredArgsConstructor
 @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
 @Getter
-public class LiiklusConsumerLoop implements Closeable {
+public class LiiklusConsumerLoop implements AutoCloseable {
 
     String topic;
     String groupName;
