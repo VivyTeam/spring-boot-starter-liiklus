@@ -1,8 +1,6 @@
-package io.vivy.liiklus;
+package io.vivy.liiklus.consumer;
 
 import com.github.bsideup.liiklus.LiiklusClient;
-import io.vivy.liiklus.consumer.LiiklusConsumer;
-import io.vivy.liiklus.consumer.LiiklusConsumerLoop;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -17,7 +15,7 @@ import java.util.logging.Level;
 
 @RequiredArgsConstructor
 @FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
-public class LiiklusComponentFactory {
+public class LiiklusConsumerFactory {
 
     LiiklusClient liiklusClient;
 

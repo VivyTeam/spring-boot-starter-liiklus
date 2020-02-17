@@ -4,6 +4,7 @@ import com.github.bsideup.liiklus.LiiklusClient;
 import com.github.bsideup.liiklus.protocol.ReceiveReply;
 import io.vivy.liiklus.common.LiiklusUtils;
 import io.vivy.liiklus.consumer.LiiklusConsumer;
+import io.vivy.liiklus.consumer.LiiklusConsumerFactory;
 import io.vivy.liiklus.consumer.LiiklusConsumerLoop;
 import io.vivy.liiklus.consumer.LiiklusConsumerProperties;
 import io.vivy.liiklus.producer.LiiklusProducer;
@@ -53,33 +54,33 @@ public class LiiklusAutoConfiguration {
     @Bean
     @ConditionalOnProperty(prefix = "liiklus", name = {"topic", "groupName"})
     @ConditionalOnBean(PartitionAwareProcessor.class)
-    LiiklusConsumerLoop liiklusConsumerLoop(LiiklusComponentFactory liiklusComponentFactory, PartitionAwareProcessor partitionAwareProcessor) {
+    LiiklusConsumerLoop liiklusConsumerLoop(LiiklusConsumerFactory liiklusConsumerFactory, PartitionAwareProcessor partitionAwareProcessor) {
         var consumer = new LiiklusConsumer() {
             @Override
             public Mono<Void> consume(int partition, ReceiveReply.Record record) {
                 return partitionAwareProcessor.apply(partition, record);
             }
         };
-        return createConsumerLoop(liiklusComponentFactory, consumer);
+        return createConsumerLoop(liiklusConsumerFactory, consumer);
     }
 
     @Bean
     @ConditionalOnProperty(prefix = "liiklus", name = {"topic", "groupName"})
     @ConditionalOnBean(RecordProcessor.class)
     @ConditionalOnMissingBean(PartitionAwareProcessor.class)
-    LiiklusConsumerLoop liiklusConsumerLoop(LiiklusComponentFactory liiklusComponentFactory, RecordProcessor recordProcessor) {
+    LiiklusConsumerLoop liiklusConsumerLoop(LiiklusConsumerFactory liiklusConsumerFactory, RecordProcessor recordProcessor) {
         var consumer = new LiiklusConsumer() {
             @Override
             public Mono<Void> consume(int partition, ReceiveReply.Record record) {
                 return recordProcessor.apply(record);
             }
         };
-        return createConsumerLoop(liiklusComponentFactory, consumer);
+        return createConsumerLoop(liiklusConsumerFactory, consumer);
     }
 
     @Deprecated
-    private LiiklusConsumerLoop createConsumerLoop(LiiklusComponentFactory liiklusComponentFactory, LiiklusConsumer liiklusConsumer) {
-        LiiklusConsumerLoop consumerLoop = liiklusComponentFactory.createConsumer(
+    private LiiklusConsumerLoop createConsumerLoop(LiiklusConsumerFactory liiklusConsumerFactory, LiiklusConsumer liiklusConsumer) {
+        LiiklusConsumerLoop consumerLoop = liiklusConsumerFactory.createConsumer(
                 properties.getTopic(),
                 properties.getGroupName(),
                 properties.getGroupVersion(),
@@ -90,8 +91,8 @@ public class LiiklusAutoConfiguration {
     }
 
     @Bean
-    public LiiklusComponentFactory liiklusComponentFactory(LiiklusClient liiklusClient) {
-        return new LiiklusComponentFactory(liiklusClient, properties.getAckInterval());
+    public LiiklusConsumerFactory liiklusComponentFactory(LiiklusClient liiklusClient) {
+        return new LiiklusConsumerFactory(liiklusClient, properties.getAckInterval());
     }
 
     @Bean
@@ -111,12 +112,12 @@ public class LiiklusAutoConfiguration {
     }
 
     @Bean
-    public List<LiiklusConsumer> liiklusConsumers(LiiklusComponentFactory liiklusComponentFactory, List<LiiklusConsumer> liiklusConsumers) {
+    public List<LiiklusConsumer> liiklusConsumers(LiiklusConsumerFactory liiklusConsumerFactory, List<LiiklusConsumer> liiklusConsumers) {
         liiklusConsumers.forEach(consumer -> {
                     var prefix = LiiklusUtils.getLiiklusPrefix(consumer);
 
                     var consumerProperties = LiiklusConsumerProperties.create(properties, prefix);
-                    LiiklusConsumerLoop consumerLoop = liiklusComponentFactory.createConsumer(
+                    LiiklusConsumerLoop consumerLoop = liiklusConsumerFactory.createConsumer(
                             consumerProperties.getTopic(),
                             consumerProperties.getGroupName(),
                             consumerProperties.getGroupVersion(),
