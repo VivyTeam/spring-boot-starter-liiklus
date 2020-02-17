@@ -11,7 +11,7 @@ import reactor.core.publisher.Mono;
 @Configuration
 public class UserTopicConfiguration {
 
-    @Bean(destroyMethod = "close")
+    @Bean
     UserConsumer userConsumer() {
         return new UserConsumer();
     }

@@ -11,7 +11,7 @@ import reactor.core.publisher.Mono;
 @Configuration
 public class GlobalTopicConfiguration {
 
-    @Bean(destroyMethod = "close")
+    @Bean
     GlobalConsumer globalConsumer() {
         return new GlobalConsumer();
     }
