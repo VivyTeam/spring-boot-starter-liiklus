@@ -1,7 +1,10 @@
-package io.vivy.liiklus;
+package io.vivy.liiklus.single;
 
 import com.github.bsideup.liiklus.container.LiiklusContainer;
 import com.github.bsideup.liiklus.protocol.PublishReply;
+import io.vivy.liiklus.LiiklusAutoConfiguration;
+import io.vivy.liiklus.LiiklusPublisher;
+import io.vivy.liiklus.LiiklusReactiveHealthIndicatorAutoConfiguration;
 import org.junit.jupiter.api.Test;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.mock.env.MockEnvironment;
@@ -29,9 +32,9 @@ class PropsTest {
         ctx.register(LiiklusAutoConfiguration.class, LiiklusReactiveHealthIndicatorAutoConfiguration.class);
         ctx.setEnvironment(new MockEnvironment()
                 .withProperty("liiklus.target", "rsocket://" + liiklus.getContainerIpAddress() + ":" + liiklus.getMappedPort(8081))
+                .withProperty("liiklus.ackInterval", "10ms")
                 .withProperty("liiklus.topic", "user-event-log")
                 .withProperty("liiklus.groupVersion", "1")
-                .withProperty("liiklus.ackInterval", "10ms")
                 .withProperty("liiklus.groupName", "consumer-" + UUID.randomUUID())
         );
         ctx.refresh();
@@ -50,9 +53,9 @@ class PropsTest {
         ctx.register(LiiklusAutoConfiguration.class, LiiklusReactiveHealthIndicatorAutoConfiguration.class);
         ctx.setEnvironment(new MockEnvironment()
                 .withProperty("liiklus.read.uri", "rsocket://" + liiklus.getContainerIpAddress() + ":" + liiklus.getMappedPort(8081))
+                .withProperty("liiklus.ackInterval", "10ms")
                 .withProperty("liiklus.topic", "user-event-log")
                 .withProperty("liiklus.groupVersion", "1")
-                .withProperty("liiklus.ackInterval", "10ms")
                 .withProperty("liiklus.groupName", "consumer-" + UUID.randomUUID())
         );
         ctx.refresh();
@@ -70,9 +73,9 @@ class PropsTest {
         ctx.register(LiiklusAutoConfiguration.class, LiiklusReactiveHealthIndicatorAutoConfiguration.class);
         ctx.setEnvironment(new MockEnvironment()
                 .withProperty("liiklus.write.uri", "rsocket://" + liiklus.getContainerIpAddress() + ":" + liiklus.getMappedPort(8081))
+                .withProperty("liiklus.ackInterval", "10ms")
                 .withProperty("liiklus.topic", "user-event-log")
                 .withProperty("liiklus.groupVersion", "1")
-                .withProperty("liiklus.ackInterval", "10ms")
                 .withProperty("liiklus.groupName", "consumer-" + UUID.randomUUID())
         );
         ctx.refresh();

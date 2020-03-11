@@ -10,10 +10,10 @@ import org.springframework.validation.annotation.Validated;
 
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
-import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import java.net.URI;
 import java.time.Duration;
+import java.util.Map;
 
 @Validated
 @ConfigurationProperties("liiklus")
@@ -28,25 +28,20 @@ public class LiiklusProperties {
     @Valid
     Target write;
 
-    @NotEmpty
-    String topic;
-
     @NotNull
     Duration ackInterval = Duration.ofSeconds(5);
 
-    @NotEmpty
+    @Deprecated
+    String topic;
+
+    @Deprecated
     String groupName;
 
     @Min(1)
+    @Deprecated
     int groupVersion = 1;
 
-    /**
-     * @deprecated use {@link #getTarget()} directly
-     */
-    @Deprecated
-    public URI getTargetURI() {
-        return getTarget();
-    }
+    Map<String, String> topics;
 
     @Data
     @NoArgsConstructor
@@ -70,6 +65,12 @@ public class LiiklusProperties {
 
             if (properties.getTarget() == null && properties.getRead() == null && properties.getWrite() == null) {
                 errors.reject("target", "at least one of the target, read.uri or write.uri should be non-empty URI");
+            }
+            if (properties.getTopic() != null && properties.getTopic().isBlank()) {
+                errors.reject("topic", "topic can't be blank");
+            }
+            if (properties.getGroupName() != null && properties.getGroupName().isBlank()) {
+                errors.reject("groupName", "groupName can't be blank");
             }
         }
     }

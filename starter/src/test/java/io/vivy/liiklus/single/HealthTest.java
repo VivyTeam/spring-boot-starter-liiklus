@@ -1,4 +1,4 @@
-package io.vivy.liiklus;
+package io.vivy.liiklus.single;
 
 import io.restassured.builder.RequestSpecBuilder;
 import io.restassured.http.ContentType;
@@ -17,8 +17,7 @@ import static org.hamcrest.core.Is.is;
                 "liiklus.groupName=${random.uuid}-health",
         }
 )
-class HealthTest extends AbstractIntegrationTest {
-
+class HealthTest extends SingleTopicTest {
 
     @LocalServerPort
     private int port;

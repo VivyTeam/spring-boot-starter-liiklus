@@ -1,4 +1,4 @@
-package io.vivy.liiklus;
+package io.vivy.liiklus.consumer;
 
 import com.github.bsideup.liiklus.LiiklusClient;
 import com.github.bsideup.liiklus.protocol.AckRequest;
@@ -8,40 +8,51 @@ import com.github.bsideup.liiklus.protocol.ReceiveRequest;
 import com.github.bsideup.liiklus.protocol.SubscribeReply;
 import com.github.bsideup.liiklus.protocol.SubscribeRequest;
 import com.google.protobuf.Empty;
+import lombok.AccessLevel;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
+import lombok.experimental.NonFinal;
 import lombok.extern.slf4j.Slf4j;
 import org.reactivestreams.Publisher;
-import org.springframework.boot.ApplicationArguments;
-import org.springframework.boot.ApplicationRunner;
 import reactor.core.Disposable;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.publisher.SignalType;
-import reactor.core.scheduler.Schedulers;
+import reactor.core.scheduler.Scheduler;
 
 import java.time.Duration;
+import java.util.Objects;
 import java.util.function.BiFunction;
-import java.util.function.Function;
 import java.util.logging.Level;
 
-@RequiredArgsConstructor
 @Slf4j
-public class LiiklusConsumerLoop implements ApplicationRunner, AutoCloseable {
+@RequiredArgsConstructor
+@FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
+@Getter
+public class LiiklusConsumerLoop implements AutoCloseable {
 
-    final LiiklusClient client;
+    String topic;
+    String groupName;
+    int groupVersion;
 
-    final LiiklusProperties properties;
+    Scheduler readScheduler;
+    Scheduler ackScheduler;
 
-    final BiFunction<Integer, Flux<ReceiveReply.Record>, Publisher<Long>> liiklusRecordProcessor;
+    LiiklusClient client;
+    BiFunction<Integer, Flux<ReceiveReply.Record>, Publisher<Long>> liiklusRecordProcessor;
 
+    @NonFinal
     Disposable disposable;
 
-    @Override
-    public void run(ApplicationArguments args) {
+    public void run() {
+        if (Objects.nonNull(disposable)) {
+            return;
+        }
         SubscribeRequest subscribeAction = SubscribeRequest.newBuilder()
-                .setTopic(properties.getTopic())
-                .setGroup(properties.getGroupName())
-                .setGroupVersion(properties.getGroupVersion())
+                .setTopic(topic)
+                .setGroup(groupName)
+                .setGroupVersion(groupVersion)
                 .setAutoOffsetReset(SubscribeRequest.AutoOffsetReset.EARLIEST)
                 .build();
 
@@ -62,15 +73,15 @@ public class LiiklusConsumerLoop implements ApplicationRunner, AutoCloseable {
                 }, Integer.MAX_VALUE, Integer.MAX_VALUE)
                 .log("mainLoop", Level.WARNING, SignalType.ON_ERROR)
                 .retryWhen(it -> it.delayElements(Duration.ofSeconds(1)))
-                .subscribeOn(Schedulers.newParallel("liiklus"))
+                .subscribeOn(readScheduler)
                 .subscribe();
     }
 
     private Mono<Empty> sendAck(int partition, long offset) {
         AckRequest request = AckRequest.newBuilder()
-                .setTopic(properties.getTopic())
-                .setGroup(properties.getGroupName())
-                .setGroupVersion(properties.getGroupVersion())
+                .setTopic(topic)
+                .setGroup(groupName)
+                .setGroupVersion(groupVersion)
                 .setPartition(partition)
                 .setOffset(offset)
                 .build();
@@ -84,6 +95,12 @@ public class LiiklusConsumerLoop implements ApplicationRunner, AutoCloseable {
     public void close() {
         if (disposable != null) {
             disposable.dispose();
+        }
+        if (readScheduler != null) {
+            readScheduler.dispose();
+        }
+        if (ackScheduler != null) {
+            ackScheduler.dispose();
         }
     }
 }

@@ -1,9 +1,11 @@
-package io.vivy.liiklus;
+package io.vivy.liiklus.single;
 
 import com.github.bsideup.liiklus.LiiklusClient;
 import com.github.bsideup.liiklus.container.LiiklusContainer;
 import com.github.bsideup.liiklus.protocol.GetOffsetsRequest;
 import com.github.bsideup.liiklus.protocol.PublishReply;
+import io.vivy.liiklus.LiiklusProperties;
+import io.vivy.liiklus.LiiklusPublisher;
 import org.assertj.core.api.Condition;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.testcontainers.lifecycle.Startables;
@@ -17,7 +19,7 @@ import java.util.concurrent.TimeUnit;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 
-public class AbstractIntegrationTest {
+public class SingleTopicTest {
 
     static {
         var liiklus = new LiiklusContainer("0.9.0")
@@ -33,7 +35,7 @@ public class AbstractIntegrationTest {
                 "liiklus.topic", "user-event-log",
                 "liiklus.groupVersion", "1",
                 "liiklus.ackInterval", "10ms"
-        ));
+                ));
     }
 
     @Autowired
@@ -44,6 +46,7 @@ public class AbstractIntegrationTest {
 
     @Autowired
     protected LiiklusProperties liiklusProperties;
+
 
     protected void waitForLiiklusOffset(PublishReply latestOffset) {
         await().atMost(5, TimeUnit.SECONDS).untilAsserted(() -> {
@@ -60,6 +63,6 @@ public class AbstractIntegrationTest {
             assertThat(liiklusClient.getOffsets(getOffsetsRequest).block(Duration.ofSeconds(5)).getOffsetsMap())
                     .hasEntrySatisfying(latestOffset.getPartition(), offsetCondition);
         });
-
     }
+
 }

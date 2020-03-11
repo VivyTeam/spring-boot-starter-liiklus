@@ -1,4 +1,4 @@
-package io.vivy.liiklus;
+package io.vivy.liiklus.producer;
 
 import com.github.bsideup.liiklus.LiiklusClient;
 import com.github.bsideup.liiklus.protocol.PublishReply;
@@ -6,19 +6,22 @@ import com.github.bsideup.liiklus.protocol.PublishRequest;
 import com.google.protobuf.ByteString;
 import lombok.AccessLevel;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import reactor.core.publisher.Mono;
 
 import java.nio.ByteBuffer;
 
 @Getter
-@RequiredArgsConstructor
-@FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
-public class LiiklusPublisher {
+@FieldDefaults(makeFinal = false, level = AccessLevel.PRIVATE)
+public class LiiklusProducer {
 
     String topic;
     LiiklusClient liiklusClient;
+
+    public void init(LiiklusClient liiklusClient, String topic) {
+        this.liiklusClient = liiklusClient;
+        this.topic = topic;
+    }
 
     public Mono<PublishReply> publish(String key, ByteBuffer value) {
         return publish(key, value.array());

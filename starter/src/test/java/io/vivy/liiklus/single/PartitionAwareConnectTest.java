@@ -1,41 +1,43 @@
-package io.vivy.liiklus;
+package io.vivy.liiklus.single;
 
 import com.github.bsideup.liiklus.protocol.PublishReply;
-import io.vivy.liiklus.support.LoggingRecordProcessor;
+import io.vivy.liiklus.support.PartitionAwareLoggingRecordProcessor;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.internal.verification.AtLeast;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.time.Duration;
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.verify;
 
+@ExtendWith(SpringExtension.class)
 @SpringBootTest(
-        classes = {ConnectTest.WithRecordProcessor.class},
+        classes = {PartitionAwareConnectTest.WithPartitionAwareRecordProcessor.class},
         webEnvironment = SpringBootTest.WebEnvironment.MOCK,
         properties = {
-                "liiklus.groupName=${random.uuid}-connect",
+                "liiklus.groupName=${random.uuid}-partitionaware",
         }
 )
-public class ConnectTest extends AbstractIntegrationTest {
+public class PartitionAwareConnectTest extends SingleTopicTest {
 
     @SpyBean
-    protected LoggingRecordProcessor loggingRecordProcessor;
+    protected PartitionAwareLoggingRecordProcessor partitionAwareLoggingRecordProcessor;
 
     @Configuration
     @Import(TestApplication.class)
-    public static class WithRecordProcessor {
+    public static class WithPartitionAwareRecordProcessor {
 
         @Bean
-        public LoggingRecordProcessor loggingRecordProcessor() {
-            return new LoggingRecordProcessor();
+        public PartitionAwareLoggingRecordProcessor partitionAwareLoggingRecordProcessor() {
+            return new PartitionAwareLoggingRecordProcessor();
         }
 
     }
@@ -46,6 +48,7 @@ public class ConnectTest extends AbstractIntegrationTest {
         PublishReply offset = liiklusPublisher.publish(key, key.getBytes()).block(Duration.ofSeconds(5));
 
         waitForLiiklusOffset(offset);
-        verify(loggingRecordProcessor, new AtLeast(1)).apply(anyInt(), any());
+        verify(partitionAwareLoggingRecordProcessor, new AtLeast(1)).apply(any(), any());
     }
+
 }

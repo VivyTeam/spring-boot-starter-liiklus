@@ -9,6 +9,7 @@ import java.util.function.Function;
  * Simple version of the {@link io.vivy.liiklus.PartitionAwareProcessor},
  * which doesn't care about partition.
  */
+@Deprecated
 @FunctionalInterface
 public interface RecordProcessor extends Function<ReceiveReply.Record, Mono<Void>> {
 
