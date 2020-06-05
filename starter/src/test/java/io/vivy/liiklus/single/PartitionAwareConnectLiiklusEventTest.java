@@ -6,7 +6,7 @@ import com.github.bsideup.liiklus.LiiklusClient;
 import com.github.bsideup.liiklus.container.LiiklusContainer;
 import com.github.bsideup.liiklus.protocol.PublishReply;
 import io.vivy.liiklus.LiiklusPublisher;
-import io.vivy.liiklus.support.CompatibleLiiklusPublisher;
+import io.vivy.liiklus.support.TestLiiklusCloudEventPublisher;
 import io.vivy.liiklus.support.PartitionAwareLoggingRecordProcessor;
 import io.vivy.liiklus.support.TestApplication;
 import org.junit.jupiter.api.Test;
@@ -73,7 +73,7 @@ public class PartitionAwareConnectLiiklusEventTest extends SingleTopicTest {
         @Bean
         @Primary
         public LiiklusPublisher publisher(@Value("${liiklus.topic}") String topic, LiiklusClient liiklusClient) {
-            return new CompatibleLiiklusPublisher(topic, liiklusClient);
+            return new TestLiiklusCloudEventPublisher(topic, liiklusClient);
         }
 
     }
