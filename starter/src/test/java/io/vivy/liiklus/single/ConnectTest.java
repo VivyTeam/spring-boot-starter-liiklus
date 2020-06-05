@@ -1,7 +1,9 @@
 package io.vivy.liiklus.single;
 
+import com.github.bsideup.liiklus.container.LiiklusContainer;
 import com.github.bsideup.liiklus.protocol.PublishReply;
 import io.vivy.liiklus.support.LoggingRecordProcessor;
+import io.vivy.liiklus.support.TestApplication;
 import org.junit.jupiter.api.Test;
 import org.mockito.internal.verification.AtLeast;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -9,6 +11,10 @@ import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.time.Duration;
 import java.util.UUID;
@@ -21,10 +27,25 @@ import static org.mockito.Mockito.verify;
         webEnvironment = SpringBootTest.WebEnvironment.MOCK,
         properties = {
                 "liiklus.groupName=${random.uuid}-connect",
-
+                "liiklus.write.secret=${random.uuid}",
+                "liiklus.topic=user-event-log",
+                "liiklus.groupVersion=1",
+                "liiklus.ackInterval=10ms",
         }
 )
+@Testcontainers
 public class ConnectTest extends SingleTopicTest {
+
+    @Container
+    static LiiklusContainer liiklus = new LiiklusContainer("0.9.3")
+            .withExposedPorts(6565, 8081);
+
+    @DynamicPropertySource
+    static void liiklusProps(DynamicPropertyRegistry registry) {
+        registry.add("liiklus.write.uri", () -> "grpc://" + liiklus.getContainerIpAddress() + ":" + liiklus.getMappedPort(6565));
+        registry.add("liiklus.read.uri", () -> "rsocket://" + liiklus.getContainerIpAddress() + ":" + liiklus.getMappedPort(8081));
+    }
+
 
     @SpyBean
     protected LoggingRecordProcessor loggingRecordProcessor;

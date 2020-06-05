@@ -21,23 +21,6 @@ import static org.awaitility.Awaitility.await;
 
 public class SingleTopicTest {
 
-    static {
-        var liiklus = new LiiklusContainer("0.9.0")
-                .withExposedPorts(6565, 8081);
-
-
-        Startables.deepStart(List.of(liiklus)).join();
-
-        System.getProperties().putAll(Map.of(
-                "liiklus.write.uri", "grpc://" + liiklus.getContainerIpAddress() + ":" + liiklus.getMappedPort(6565),
-                "liiklus.write.secret", UUID.randomUUID().toString(),
-                "liiklus.read.uri", "rsocket://" + liiklus.getContainerIpAddress() + ":" + liiklus.getMappedPort(8081),
-                "liiklus.topic", "user-event-log",
-                "liiklus.groupVersion", "1",
-                "liiklus.ackInterval", "10ms"
-                ));
-    }
-
     @Autowired
     protected LiiklusPublisher liiklusPublisher;
 

@@ -20,6 +20,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.publisher.SignalType;
 import reactor.core.scheduler.Scheduler;
+import reactor.util.retry.Retry;
 
 import java.time.Duration;
 import java.util.Objects;
@@ -65,14 +66,41 @@ public class LiiklusConsumerLoop implements AutoCloseable {
                     int partition = partitionAssignments.key();
 
                     return partitionAssignments
-                            .switchMap(assignment -> client.receive(ReceiveRequest.newBuilder().setAssignment(assignment).build()))
-                            .filter(ReceiveReply::hasRecord)
-                            .map(ReceiveReply::getRecord)
-                            .compose(it -> liiklusRecordProcessor.apply(partition, it))
+                            .switchMap(assignment -> client.receive(
+                                    ReceiveRequest
+                                            .newBuilder()
+                                            .setAssignment(assignment)
+                                            .setFormat(ReceiveRequest.ContentFormat.LIIKLUS_EVENT) // in versions prior to 0.10 just ignored
+                                            .build()
+                            ))
+                            .<ReceiveReply.Record>handle((reply, sink) -> {
+                                switch (reply.getReplyCase()) {
+                                    case RECORD: // would be received prior to 0.10 liiklus
+                                        sink.next(reply.getRecord());
+                                        return;
+                                    case LIIKLUS_EVENT_RECORD:
+                                        sink.next(
+                                                ReceiveReply.Record.newBuilder()
+                                                        .setKey(reply.getLiiklusEventRecord().getKey())
+                                                        .setTimestamp(reply.getLiiklusEventRecord().getTimestamp())
+                                                        .setOffset(reply.getLiiklusEventRecord().getOffset())
+                                                        .setReplay(reply.getLiiklusEventRecord().getReplay())
+                                                        .setValue(reply.getLiiklusEventRecord().getEvent().getData())
+                                                        .build()
+                                        );
+
+                                        return;
+
+                                    // just skip this reply
+                                    default:
+                                    case REPLY_NOT_SET:
+                                }
+                            })
+                            .transformDeferred(it -> liiklusRecordProcessor.apply(partition, it))
                             .flatMap(offset -> sendAck(partition, offset), 1, 1);
                 }, Integer.MAX_VALUE, Integer.MAX_VALUE)
                 .log("mainLoop", Level.WARNING, SignalType.ON_ERROR)
-                .retryWhen(it -> it.delayElements(Duration.ofSeconds(1)))
+                .retryWhen(Retry.fixedDelay(Long.MAX_VALUE, Duration.ofSeconds(1)))
                 .subscribeOn(readScheduler)
                 .subscribe();
     }
@@ -88,7 +116,7 @@ public class LiiklusConsumerLoop implements AutoCloseable {
         return Mono
                 .defer(() -> client.ack(request))
                 .log("p" + partition + "-ack", Level.WARNING, SignalType.ON_ERROR)
-                .retryWhen(it -> it.delayElements(Duration.ofSeconds(1)));
+                .retryWhen(Retry.fixedDelay(Long.MAX_VALUE, Duration.ofSeconds(1)));
     }
 
     @Override

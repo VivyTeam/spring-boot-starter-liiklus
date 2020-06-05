@@ -32,7 +32,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 
 @SpringBootTest(
-        classes = {PartitionAwareConnectTest.WithPartitionAwareRecordProcessor.class},
+        classes = {PartitionAwareConnectLiiklusEventTest.WithPartitionAwareRecordProcessor.class},
         webEnvironment = SpringBootTest.WebEnvironment.MOCK,
         properties = {
                 "liiklus.groupName=${random.uuid}-partitionaware",
@@ -43,10 +43,10 @@ import static org.mockito.Mockito.verify;
         }
 )
 @Testcontainers
-public class PartitionAwareConnectTest extends SingleTopicTest {
+public class PartitionAwareConnectLiiklusEventTest extends SingleTopicTest {
 
     @Container
-    static LiiklusContainer liiklus = new LiiklusContainer("0.9.3")
+    static LiiklusContainer liiklus = new LiiklusContainer(LiiklusContainer.class.getPackage().getImplementationVersion())
             .withExposedPorts(6565, 8081);
 
     @DynamicPropertySource
@@ -69,6 +69,13 @@ public class PartitionAwareConnectTest extends SingleTopicTest {
         public PartitionAwareLoggingRecordProcessor partitionAwareLoggingRecordProcessor() {
             return new PartitionAwareLoggingRecordProcessor();
         }
+
+        @Bean
+        @Primary
+        public LiiklusPublisher publisher(@Value("${liiklus.topic}") String topic, LiiklusClient liiklusClient) {
+            return new CompatibleLiiklusPublisher(topic, liiklusClient);
+        }
+
     }
 
     @Test

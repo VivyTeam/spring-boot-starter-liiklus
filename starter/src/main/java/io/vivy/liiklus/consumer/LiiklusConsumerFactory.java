@@ -9,6 +9,7 @@ import reactor.core.publisher.Mono;
 import reactor.core.publisher.ReplayProcessor;
 import reactor.core.publisher.SignalType;
 import reactor.core.scheduler.Schedulers;
+import reactor.util.retry.Retry;
 
 import java.time.Duration;
 import java.util.logging.Level;
@@ -39,7 +40,7 @@ public class LiiklusConsumerFactory {
                             .concatMap(
                                     record -> Mono.defer(() -> liiklusConsumer.consume(partition, record))
                                             .log("processor", Level.SEVERE, SignalType.ON_ERROR)
-                                            .retryWhen(it -> it.delayElements(Duration.ofSeconds(1)))
+                                            .retryWhen(Retry.fixedDelay(Long.MAX_VALUE, Duration.ofSeconds(1)))
                                             .delaySubscription(ackFinished)
                                             .thenReturn(record.getOffset()),
                                     1_000
