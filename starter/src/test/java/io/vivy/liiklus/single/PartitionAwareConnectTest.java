@@ -51,8 +51,8 @@ public class PartitionAwareConnectTest extends SingleTopicTest {
 
     @DynamicPropertySource
     static void liiklusProps(DynamicPropertyRegistry registry) {
-        registry.add("liiklus.write.uri", () -> "grpc://" + liiklus.getContainerIpAddress() + ":" + liiklus.getMappedPort(6565));
-        registry.add("liiklus.read.uri", () -> "rsocket://" + liiklus.getContainerIpAddress() + ":" + liiklus.getMappedPort(8081));
+        registry.add("liiklus.write.uri", () -> "grpc://" + liiklus.getHost() + ":" + liiklus.getMappedPort(6565));
+        registry.add("liiklus.read.uri", () -> "rsocket://" + liiklus.getHost() + ":" + liiklus.getMappedPort(8081));
     }
 
     @Autowired

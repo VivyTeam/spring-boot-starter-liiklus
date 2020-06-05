@@ -31,7 +31,7 @@ class PropsTest {
         var ctx = new AnnotationConfigApplicationContext();
         ctx.register(LiiklusAutoConfiguration.class, LiiklusReactiveHealthIndicatorAutoConfiguration.class);
         ctx.setEnvironment(new MockEnvironment()
-                .withProperty("liiklus.target", "rsocket://" + liiklus.getContainerIpAddress() + ":" + liiklus.getMappedPort(8081))
+                .withProperty("liiklus.target", "rsocket://" + liiklus.getHost() + ":" + liiklus.getMappedPort(8081))
                 .withProperty("liiklus.ackInterval", "10ms")
                 .withProperty("liiklus.topic", "user-event-log")
                 .withProperty("liiklus.groupVersion", "1")
@@ -52,7 +52,7 @@ class PropsTest {
         var ctx = new AnnotationConfigApplicationContext();
         ctx.register(LiiklusAutoConfiguration.class, LiiklusReactiveHealthIndicatorAutoConfiguration.class);
         ctx.setEnvironment(new MockEnvironment()
-                .withProperty("liiklus.read.uri", "rsocket://" + liiklus.getContainerIpAddress() + ":" + liiklus.getMappedPort(8081))
+                .withProperty("liiklus.read.uri", "rsocket://" + liiklus.getHost() + ":" + liiklus.getMappedPort(8081))
                 .withProperty("liiklus.ackInterval", "10ms")
                 .withProperty("liiklus.topic", "user-event-log")
                 .withProperty("liiklus.groupVersion", "1")
@@ -72,7 +72,7 @@ class PropsTest {
         var ctx = new AnnotationConfigApplicationContext();
         ctx.register(LiiklusAutoConfiguration.class, LiiklusReactiveHealthIndicatorAutoConfiguration.class);
         ctx.setEnvironment(new MockEnvironment()
-                .withProperty("liiklus.write.uri", "rsocket://" + liiklus.getContainerIpAddress() + ":" + liiklus.getMappedPort(8081))
+                .withProperty("liiklus.write.uri", "rsocket://" + liiklus.getHost() + ":" + liiklus.getMappedPort(8081))
                 .withProperty("liiklus.ackInterval", "10ms")
                 .withProperty("liiklus.topic", "user-event-log")
                 .withProperty("liiklus.groupVersion", "1")
