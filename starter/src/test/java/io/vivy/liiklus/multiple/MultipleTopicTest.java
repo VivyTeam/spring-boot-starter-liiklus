@@ -35,15 +35,15 @@ import static org.mockito.Mockito.verify;
 public class MultipleTopicTest {
 
     static {
-        var liiklus = new LiiklusContainer("0.9.0")
+        var liiklus = new LiiklusContainer("0.9.3")
                 .withExposedPorts(6565, 8081);
 
         Startables.deepStart(List.of(liiklus)).join();
 
         System.getProperties().putAll(Map.of(
-                "liiklus.write.uri", "grpc://" + liiklus.getContainerIpAddress() + ":" + liiklus.getMappedPort(6565),
+                "liiklus.write.uri", "grpc://" + liiklus.getHost() + ":" + liiklus.getMappedPort(6565),
                 "liiklus.write.secret", UUID.randomUUID().toString(),
-                "liiklus.read.uri", "rsocket://" + liiklus.getContainerIpAddress() + ":" + liiklus.getMappedPort(8081),
+                "liiklus.read.uri", "rsocket://" + liiklus.getHost() + ":" + liiklus.getMappedPort(8081),
                 "liiklus.ackInterval", "10ms"
         ));
     }

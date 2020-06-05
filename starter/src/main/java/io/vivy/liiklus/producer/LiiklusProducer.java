@@ -12,10 +12,11 @@ import reactor.core.publisher.Mono;
 import java.nio.ByteBuffer;
 
 @Getter
-@FieldDefaults(makeFinal = false, level = AccessLevel.PRIVATE)
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class LiiklusProducer {
 
     String topic;
+
     LiiklusClient liiklusClient;
 
     public void init(LiiklusClient liiklusClient, String topic) {

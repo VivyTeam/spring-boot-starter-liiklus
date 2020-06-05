@@ -24,17 +24,17 @@ allprojects {
         overriddenByDependencies = false
 
         imports {
-            mavenBom 'org.springframework.boot:spring-boot-dependencies:2.1.12.RELEASE'
+            mavenBom 'org.springframework.boot:spring-boot-dependencies:2.2.6.RELEASE'
         }
 
         testCompile {
             imports {
-                mavenBom 'org.testcontainers:testcontainers-bom:1.12.5'
+                mavenBom 'org.testcontainers:testcontainers-bom:1.14.3'
             }
         }
 
         dependencies {
-            dependencySet(group: 'com.github.bsideup.liiklus', version: '0.9.3') {
+            dependencySet(group: 'com.github.bsideup.liiklus', version: '0.10.0-rc1') {
                 entry 'client'
                 entry 'testing'
             }
@@ -58,6 +58,7 @@ subprojects {
     dependencies {
         testImplementation 'org.junit.jupiter:junit-jupiter-api'
         testImplementation 'org.junit.jupiter:junit-jupiter-params'
+        testImplementation "org.testcontainers:junit-jupiter"
 
         testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
     }
