@@ -28,4 +28,5 @@ dependencies {
     testCompile 'org.assertj:assertj-core'
     testCompile 'io.rest-assured:rest-assured'
     testCompile 'org.awaitility:awaitility'
+    testCompile 'io.projectreactor:reactor-test'
 }
