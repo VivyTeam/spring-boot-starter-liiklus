@@ -46,6 +46,7 @@ public class LiiklusConsumerFactory {
                                     1_000
                             )
                             .sample(Flux.interval(ackInterval, ackScheduler))
+                            .onBackpressureLatest()
                             .doOnNext(__ -> ackInProgress.onNext(true))
                             .doOnRequest(__ -> Schedulers.parallel().schedule(() -> ackInProgress.onNext(false)));
                 }
