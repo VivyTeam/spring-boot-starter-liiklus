@@ -31,7 +31,6 @@ class ConsumerTest {
                                         Duration.ofSeconds(5)
                                 ).apply(0, records)
                         )
-                        .take(2)
                         .log("flow"),
                 1
         )
@@ -42,7 +41,7 @@ class ConsumerTest {
                 .thenRequest(1)
                 .thenAwait(Duration.ofSeconds(5))
                 .expectNextCount(1)
-                .expectComplete()
+                .thenCancel()
                 .verify();
     }
 
@@ -52,7 +51,6 @@ class ConsumerTest {
         StepVerifier.withVirtualTime(() -> Flux
                         .interval(Duration.ofSeconds(1)).log("interval")
                         .sample(Duration.ofSeconds(5)).log("sample")
-                        .take(2)
                 , 1)
                 .expectSubscription()
                 .thenAwait(Duration.ofSeconds(10))
@@ -68,7 +66,6 @@ class ConsumerTest {
                         .interval(Duration.ofSeconds(1)).log("interval")
                         .sample(Duration.ofSeconds(5)).log("sample")
                         .onBackpressureLatest().log("backpressure")
-                        .take(2)
                 , 1)
                 .expectSubscription()
                 .thenAwait(Duration.ofSeconds(10))
@@ -76,7 +73,7 @@ class ConsumerTest {
                 .thenRequest(1)
                 .thenAwait(Duration.ofSeconds(10))
                 .expectNext(8L)
-                .expectComplete()
+                .thenCancel()
                 .verify();
     }
 }
