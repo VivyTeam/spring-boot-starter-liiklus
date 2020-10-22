@@ -1,3 +1,5 @@
+apply plugin: 'io.franzbecker.gradle-lombok'
+
 test.testLogging {
     displayGranularity 1
     showStackTraces = true
@@ -7,26 +9,20 @@ test.testLogging {
 
 
 dependencies {
-    annotationProcessor 'org.projectlombok:lombok'
-    testAnnotationProcessor  'org.projectlombok:lombok'
-    compileOnly 'org.projectlombok:lombok'
-    testCompileOnly 'org.projectlombok:lombok'
+    implementation 'org.springframework.boot:spring-boot-autoconfigure'
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    implementation 'javax.validation:validation-api'
 
-    compile 'org.springframework.boot:spring-boot-autoconfigure'
-    compileOnly 'org.springframework.boot:spring-boot-starter-actuator'
-    compile 'javax.validation:validation-api'
-    compile 'com.github.bsideup.liiklus:client'
-    compile 'com.auth0:java-jwt'
+    implementation 'com.auth0:java-jwt:3.9.0'
 
-    compile 'com.avast.grpc.jwt:grpc-java-jwt'
+    implementation 'com.avast.grpc.jwt:grpc-java-jwt:0.2.0'
 
-    testCompile 'com.github.bsideup.liiklus:testing'
-    testCompile 'org.springframework.boot:spring-boot-starter-test'
-    testCompile 'org.springframework.boot:spring-boot-starter-actuator'
-    testCompile 'org.springframework.boot:spring-boot-starter-webflux'
-    testCompile 'org.hibernate.validator:hibernate-validator'
-    testCompile 'org.assertj:assertj-core'
-    testCompile 'io.rest-assured:rest-assured'
-    testCompile 'org.awaitility:awaitility'
-    testCompile 'io.projectreactor:reactor-test'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.springframework.boot:spring-boot-starter-actuator'
+    testImplementation 'org.springframework.boot:spring-boot-starter-webflux'
+    testImplementation 'org.hibernate.validator:hibernate-validator'
+    testImplementation 'org.assertj:assertj-core'
+    testImplementation 'io.rest-assured:rest-assured'
+    testImplementation 'org.awaitility:awaitility'
+    testImplementation 'io.projectreactor:reactor-test'
 }
