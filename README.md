@@ -4,11 +4,11 @@
 
 Add to dependency management
 
-`dependency 'com.github.VivyTeam.spring-boot-starter-liiklus:starter:$latest'`
+`dependency 'com.vivy.spring-boot-starter-liiklus:starter:$latest'`
 
 and to module 
 
-`compile 'com.github.VivyTeam.spring-boot-starter-liiklus:starter'`
+`compile 'com.vivy.spring-boot-starter-liiklus:starter'`
 
 (assuming you're using jitpack)
 
