@@ -49,7 +49,7 @@ subprojects {
 
         testImplementation 'com.github.bsideup.liiklus:testing:0.10.0-rc1'
 
-        testImplementation 'org.awaitility:awaitility:3.1.6'
+        testImplementation 'org.awaitility:awaitility:4.0.3'
 
         testImplementation platform('org.junit:junit-bom:5.6.2')
 
